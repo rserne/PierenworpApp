@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Pierenworp">
 <title>Pierenworp</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -179,14 +179,21 @@ details.rules ol{margin:0 0 14px;padding-left:20px;display:flex;flex-direction:c
 .prow .meta{font-size:13px;color:var(--muted)}
 .prow .score{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .foot{font-size:13px;color:var(--muted);text-align:center;margin:0}
+
+/* updatemelding */
+.update{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:20;width:min(528px,calc(100% - 32px));display:flex;align-items:center;gap:12px;padding:10px 10px 10px 16px;border-radius:16px;background:var(--ink);color:var(--bg);box-shadow:var(--shadow-lift);font-weight:600;font-size:14.5px;animation:drop .4s cubic-bezier(.2,.9,.3,1.2) both}
+.update span{flex:1;min-width:0}
+.up-btn{flex:none;border:0;border-radius:11px;padding:10px 15px;font-weight:700;font-size:14.5px;background:var(--pink);color:var(--pink-ink)}
+@keyframes drop{from{transform:translate(-50%,-24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}html,body{height:auto}</style>
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 </head>
 <body>
 
 <div class="wrap" id="app"></div>
 <div class="dock" id="dock"></div>
+<div class="update" id="update" role="status" aria-live="polite" hidden></div>
 
 <script>
 (function(){
@@ -205,7 +212,16 @@ let seats=[
 ];
 let pref={fast:false,sound:true};
 const soundOn=()=>pref.sound!==false;
-const ui={confirm:false,fresh:false,err:''};
+const ui={confirm:false,fresh:false,err:'',update:null};
+
+/* ---------- melding bij een nieuwe versie (aangeroepen door de app-schil) ---------- */
+function renderUpdate(busy){
+  const el=document.getElementById('update'); if(!el) return;
+  if(!ui.update&&!busy){ el.hidden=true; return; }
+  el.hidden=false;
+  el.innerHTML=busy?'<span>Nieuwe versie laden…</span>':'<span>Er is een nieuwe versie van Pierenworp.</span><button class="up-btn" data-act="update">Vernieuwen</button>';
+}
+window.__pwShowUpdate=fn=>{ ui.update=fn; renderUpdate(); };
 let aiTimer=null;
 
 /* ---------- geluid: dobbelstenen, live opgewekt met Web Audio ---------- */
@@ -621,6 +637,7 @@ document.addEventListener('click',e=>{
     case 'cancel-new': ui.confirm=false; render(); break;
     case 'new': clearTimeout(aiTimer); ui.confirm=false; S=null; save(); render(); break;
     case 'again': startGame(); break;
+    case 'update': if(ui.update){ clearTimeout(aiTimer); save(); const go=ui.update; ui.update=null; renderUpdate(true); go(); } break;
   }
 });
 ['touchend','pointerup','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
@@ -654,7 +671,32 @@ if(window.claude?.hot?.ready) window.claude.hot.ready(boot); else boot(window.cl
 </script>
 
 <script>
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
+/* App-schil: service worker registreren en melden wanneer er een nieuwe versie klaarstaat */
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  var wantReload=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){ if(wantReload) location.reload(); });
+  function offer(worker){
+    if(!navigator.serviceWorker.controller || !window.__pwShowUpdate) return;
+    window.__pwShowUpdate(function(){
+      wantReload=true;
+      worker.postMessage({type:'SKIP_WAITING'});
+      setTimeout(function(){ location.reload(); },3000);
+    });
+  }
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      if(reg.waiting) offer(reg.waiting);
+      reg.addEventListener('updatefound',function(){
+        var w=reg.installing; if(!w) return;
+        w.addEventListener('statechange',function(){ if(w.state==='installed') offer(w); });
+      });
+      function check(){ reg.update().catch(function(){}); }
+      document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') check(); });
+      setInterval(check,30*60*1000);
+    }).catch(function(){});
+  });
+})();
 </script>
 </body>
 </html>

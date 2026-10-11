@@ -40,4 +40,6 @@ Open daarna http://localhost:8000 in je browser.
 
 ## Een nieuwe versie uitrollen
 
-Verhoog in `sw.js` het versienummer, bijvoorbeeld van `pierenworp-v6` naar `pierenworp-v7`. Geïnstalleerde apps halen dan bij de volgende start de nieuwe bestanden op.
+Verhoog in `sw.js` het versienummer, bijvoorbeeld van `pierenworp-v7` naar `pierenworp-v8`, en zet de bestanden op GitHub.
+
+Wie de app open heeft, krijgt dan bovenin de melding *Er is een nieuwe versie van Pierenworp*. Een tik op **Vernieuwen** laadt de nieuwe versie meteen; een lopend spel blijft bewaard. De app zoekt naar updates bij het openen en elk half uur.
