@@ -24,6 +24,7 @@
   --ink:#1d1626; --muted:#6c6276;
   --pink:#f2457d; --pink-ink:#ffffff; --pink-soft:#ffe0ea;
   --mint:#12b98d; --mint-ink:#ffffff; --mint-soft:#d6f5ea;
+  --bad:#e5484d; --bad-ink:#ffffff; --bad-soft:#ffe6e6;
   --die:#ffffff; --pip:#1d1626; --tile:#ffffff;
   --shadow:0 1px 2px rgba(29,22,38,.06),0 6px 20px rgba(29,22,38,.07);
   --shadow-lift:0 2px 4px rgba(29,22,38,.08),0 14px 30px rgba(29,22,38,.14);
@@ -38,6 +39,7 @@
   --ink:#f3eef7; --muted:#a297ac;
   --pink:#ff5f93; --pink-ink:#1d0b13; --pink-soft:rgba(255,95,147,.16);
   --mint:#34dcab; --mint-ink:#04201a; --mint-soft:rgba(52,220,171,.15);
+  --bad:#ff5f66; --bad-ink:#1c0607; --bad-soft:rgba(255,95,102,.16);
   --die:#f8f4fb; --pip:#1d1626; --tile:#241e2a;
   --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
   --shadow-lift:0 1px 0 rgba(255,255,255,.06) inset,0 16px 34px rgba(0,0,0,.55);
@@ -49,6 +51,7 @@
   --ink:#f3eef7; --muted:#a297ac;
   --pink:#ff5f93; --pink-ink:#1d0b13; --pink-soft:rgba(255,95,147,.16);
   --mint:#34dcab; --mint-ink:#04201a; --mint-soft:rgba(52,220,171,.15);
+  --bad:#ff5f66; --bad-ink:#1c0607; --bad-soft:rgba(255,95,102,.16);
   --die:#f8f4fb; --pip:#1d1626; --tile:#241e2a;
   --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
   --shadow-lift:0 1px 0 rgba(255,255,255,.06) inset,0 16px 34px rgba(0,0,0,.55);
@@ -60,7 +63,7 @@ body{font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-tap-highl
 *{box-sizing:border-box}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
-.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:12px calc(128px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:20px}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:12px calc(230px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:20px}
 
 /* kop */
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -93,9 +96,12 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .avatar{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff;background:var(--c)}
 .pcard .who{flex:1;min-width:0}
 .pcard .name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
-.pcard .meta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:5px;white-space:nowrap}
-.pcard .meta svg{width:16px;height:6px}
-.pcard .meta b{color:var(--ink);font-variant-numeric:tabular-nums}
+.pcard .meta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:12px;white-space:nowrap;margin-top:2px}
+.pcard .stat{display:inline-flex;align-items:center;gap:5px}
+.pcard .stat svg.wi{width:16px;height:6px}
+.pcard .stat svg.ti{width:10px;height:14px}
+.pcard .stat b{color:var(--ink);font-variant-numeric:tabular-nums;font-size:14px}
+.pcard.got .mini{animation:pop .5s cubic-bezier(.2,.9,.3,1.5) both}
 .mini{width:30px;height:48px;flex:none;border-radius:7px;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;padding:4px 0}
 .mini .num{flex:none;font-family:var(--f-display);font-weight:600;font-size:10.5px;line-height:1;letter-spacing:-.03em}
 .mini .worms{flex:1;display:flex;flex-direction:column;justify-content:center;gap:1px;width:50%;margin-top:3px}
@@ -125,11 +131,11 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .die svg{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 8px rgba(29,22,38,.18))}
 .die.sm{width:30px;height:30px}
 .die.sm svg{filter:drop-shadow(0 1px 2px rgba(29,22,38,.18))}
-.rolled{display:flex;flex-wrap:wrap;gap:9px;min-height:56px}
+.rolled{display:flex;flex-wrap:wrap;gap:12px;min-height:56px;padding-top:6px}
 .rolled .die:disabled{cursor:default}
 .rolled .die.used{opacity:.28}
 .rolled.choosing .die:not(.chosen){opacity:.3}
-.rolled .die.chosen{transform:translateY(-8px) scale(1.06);box-shadow:0 0 0 3px var(--mint)}
+.rolled .die.chosen{transform:translateY(-6px);box-shadow:0 0 0 2.5px var(--mint)}
 .die.sm.new{animation:pop .45s cubic-bezier(.2,.9,.3,1.5) both;animation-delay:calc(var(--i)*60ms)}
 @keyframes pop{from{transform:translateY(-18px) scale(.6);opacity:0}to{transform:none;opacity:1}}
 .inline-die{display:inline-block;width:22px;height:22px;vertical-align:-5px;margin:0 2px}
@@ -143,6 +149,28 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));background:var(--dock);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border-top:1px solid var(--line)}
 .dock-in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .dock-in p{margin:0;flex:1 1 100%;font-weight:600;font-size:15px}
+.dock-in .dock-msg{font-weight:500;font-size:15.5px;line-height:1.35;text-wrap:balance}
+.dock-msg b{font-weight:700;color:var(--pink)}
+.wait .dock-msg{flex:1;color:var(--ink)}
+
+/* uitslag van een beurt */
+.result{flex:1 1 100%;display:flex;align-items:center;gap:14px;border-radius:18px;padding:12px 14px;animation:rise .4s cubic-bezier(.2,.9,.3,1.25) both}
+.result .r-text{flex:1;min-width:0}
+.result .r-title{font-family:var(--f-display);font-weight:700;font-size:19px;letter-spacing:-.02em;line-height:1.15;margin:0}
+.result .r-sub{margin:3px 0 0;font-size:14px;font-weight:500;line-height:1.35}
+.result.take{background:var(--mint-soft)}
+.result.take .r-title{color:var(--mint)}
+.result.steal{background:var(--pink-soft)}
+.result.steal .r-title{color:var(--pink)}
+.result.bust{background:var(--bad);color:var(--bad-ink)}
+.result.bust .r-sub{opacity:.92}
+.result .bigtile{width:44px;height:68px;flex:none;border-radius:10px;background:var(--tile);box-shadow:var(--shadow-lift);display:flex;flex-direction:column;align-items:center;padding:6px 0}
+.result .bigtile .num{font-family:var(--f-display);font-weight:700;font-size:17px;line-height:1;letter-spacing:-.03em;color:var(--ink)}
+.result .bigtile .worms{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;width:50%;margin-top:5px}
+.result .bigtile .worms svg{width:100%;height:auto;display:block}
+.result .bust-icon{width:44px;height:44px;flex:none;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center}
+.result .bust-icon svg{width:24px;height:24px}
+@keyframes rise{from{transform:translateY(16px) scale(.96);opacity:0}to{transform:none;opacity:1}}
 .btn{flex:1 1 140px;min-height:54px;border:0;border-radius:16px;padding:0 18px;font-weight:700;font-size:16.5px;background:var(--pink);color:var(--pink-ink);box-shadow:0 6px 16px -6px var(--pink);transition:transform .12s,filter .12s}
 .btn:active{transform:scale(.97)}
 .btn:hover{filter:brightness(1.05)}
@@ -161,7 +189,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .lede{margin:0;font-size:16px;color:var(--muted);max-width:44ch;text-wrap:pretty}
 .seats{display:flex;flex-direction:column;gap:8px}
 .seat{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);box-shadow:var(--shadow);border-radius:var(--r);padding:8px 8px 8px 10px}
-.seat input{flex:1 1 100px;min-width:0;background:transparent;border:0;padding:8px 2px;font:inherit;font-weight:600;color:var(--ink)}
+.seat input{flex:1 1 56px;min-width:0;background:transparent;border:0;padding:8px 2px;font:inherit;font-weight:600;color:var(--ink)}
 .seat.off{box-shadow:none;background:transparent;outline:1.5px dashed var(--line);outline-offset:-1.5px}
 .seat.off input,.seat.off .avatar{opacity:.4}
 .seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;gap:2px}
@@ -172,7 +200,10 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 /* regels */
 details.rules{background:var(--surface);box-shadow:var(--shadow);border-radius:var(--r);padding:2px 18px}
 details.rules summary{font-weight:700;padding:14px 0;cursor:pointer}
-details.rules ol{margin:0 0 14px;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:62ch;color:var(--muted)}
+details.rules ol{margin:0 0 16px;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:62ch;color:var(--muted)}
+details.rules p{margin:0 0 12px;color:var(--muted);max-width:62ch}
+.rules-grill{margin:0 0 18px}
+.rules-grill .tile{box-shadow:inset 0 0 0 1.5px var(--line);background:var(--bg)}
 .tiers{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;font-size:13px}
 .tiers span{background:var(--surface-2);border-radius:8px;padding:4px 9px;font-variant-numeric:tabular-nums;font-weight:500}
 
@@ -397,9 +428,11 @@ function doStop(){
   if(tg.type==='steal'){
     const v=S.players[tg.from]; v.stack.pop(); me.stack.push(tg.n);
     S.msg=`<b>${esc(me.name)}</b> pikt tegel ${tg.n} af van ${esc(v.name)}.`;
+    t.result={kind:'steal',n:tg.n,from:v.name};
   }else{
     S.center.find(c=>c.n===tg.n).st='taken'; me.stack.push(tg.n);
     S.msg=`<b>${esc(me.name)}</b> pakt tegel ${tg.n}: ${wl(wormsOf(tg.n))}.`;
+    t.result={kind:'take',n:tg.n};
   }
   t.phase='done'; t.rolled=[]; ui.fresh=false;
   commit();
@@ -417,6 +450,7 @@ function bust(reason){
   if(back) m+=` ${esc(me.name)} levert tegel ${back} in.`;
   if(flipped) m+=` Tegel ${flipped} gaat dicht.`;
   S.msg=m;
+  t.result={kind:'bust',reason,back,flipped};
 }
 function advance(){
   if(T().phase!=='done') return;
@@ -430,35 +464,75 @@ function advance(){
 function commit(){save();render();schedule()}
 
 /* ---------- computerspeler ---------- */
+/* De computer rekent per beurt uit wat elke keuze gemiddeld oplevert:
+   alle mogelijke worpen, alle waarden die hij apart kan leggen, en of stoppen
+   meer pieren oplevert dan doorgooien (met het risico de bovenste tegel kwijt te raken). */
+const OUT=(()=>{                       // alle uitkomsten van n stenen, met hun kans
+  const fact=[1]; for(let i=1;i<=8;i++) fact[i]=fact[i-1]*i;
+  const out=[[[[0,0,0,0,0,0,0],1]]];
+  for(let n=1;n<=8;n++){
+    const list=[], c=[0,0,0,0,0,0,0];
+    (function rec(face,rest){
+      if(face===6){ c[6]=rest; let m=fact[n]; for(let f=1;f<=6;f++) m/=fact[c[f]]; list.push([c.slice(),m/Math.pow(6,n)]); return; }
+      for(let k=0;k<=rest;k++){ c[face]=k; rec(face+1,rest-k); }
+    })(1,n);
+    out.push(list);
+  }
+  return out;
+})();
+function planner(){
+  const me=S.cur, opp=Math.max(1,S.players.length-1);
+  const open=S.center.filter(c=>c.st==='open').map(c=>c.n);
+  const tops={};
+  S.players.forEach((p,i)=>{ if(i!==me&&p.stack.length) tops[p.stack[p.stack.length-1]]=true; });
+  const mine=P().stack, myTop=mine.length?mine[mine.length-1]:null;
+  // mislukken: je bovenste tegel kwijt, en een tegel minder in het spel
+  const bustV=-(myTop?wormsOf(myTop):0)-0.3;
+  const stopV=[];
+  for(let s=0;s<=40;s++){
+    if(s<21){stopV[s]=null;continue}
+    let best=null; for(const n of open) if(n<=s) best=n;
+    let v=best?wormsOf(best):null;
+    if(tops[s]){ const sv=wormsOf(s)*(1+1/opp); v=v==null?sv:Math.max(v,sv); }  // afpikken telt dubbel bij twee spelers
+    stopV[s]=v;
+  }
+  const memo=new Map();
+  function V(mask,sum,n){            // waarde na het apart leggen: stoppen of doorgooien
+    const key=mask*1000+sum*10+n;
+    if(memo.has(key)) return memo.get(key);
+    const sv=(mask&64)&&stopV[sum]!=null?stopV[sum]:-Infinity;
+    const rv=n>0?R(mask,sum,n):-Infinity;
+    let v=Math.max(sv,rv); if(v===-Infinity) v=bustV;
+    memo.set(key,v); return v;
+  }
+  function R(mask,sum,n){            // verwachte waarde van gooien met n stenen
+    let e=0;
+    for(const [c,p] of OUT[n]){
+      let best=-Infinity;
+      for(let f=1;f<=6;f++) if(c[f]&&!(mask&(1<<f))){ const v=V(mask|(1<<f),sum+c[f]*val(f),n-c[f]); if(v>best) best=v; }
+      e+=p*(best===-Infinity?bustV:best);
+    }
+    return e;
+  }
+  return {V,R,stopV};
+}
+const maskOf=t=>t.kept.reduce((m,f)=>m|(1<<f),0);
 function aiPick(t){
-  const kf=new Set(t.kept), counts={};
-  t.rolled.forEach(f=>{if(!kf.has(f))counts[f]=(counts[f]||0)+1});
-  const l=left(t), worm=hasWorm(t), tot=total(t);
-  let best=null, bs=-Infinity;
-  for(const k in counts){
-    const f=+k, c=counts[f], after=l-c, sum=tot+c*val(f);
-    let s=c*val(f);
-    if(f===6) s+=worm?1:7;
-    if(f<=3) s-=c*1.6;
-    if(after===0&&!worm&&f!==6) s-=100;
-    if(after===0&&sum<21) s-=100;
-    if(after<=1&&!worm&&f!==6) s-=8;
-    if(s>bs){bs=s;best=f}
+  const pl=planner(), mask=maskOf(t), sum=total(t), n=left(t);
+  let best=null, bv=-Infinity;
+  for(let f=1;f<=6;f++){
+    if(mask&(1<<f)) continue;
+    const c=t.rolled.filter(x=>x===f).length; if(!c) continue;
+    const v=pl.V(mask|(1<<f),sum+c*val(f),n-c);
+    if(v>bv+1e-9){bv=v;best=f}
   }
   return best;
 }
 function aiShouldStop(t){
   const tg=target(); if(!tg) return false;
-  const l=left(t); if(l===0) return true;
-  const k=new Set(t.kept).size;
-  const bustNext=Math.pow(k/6,l);
-  const w=wormsOf(tg.n);
-  if(tg.type==='steal'&&w>=2) return true;
-  if(l<=2) return true;
-  if(w>=3) return true;
-  if(bustNext>0.18) return true;
-  if(l<=3&&w>=2) return true;
-  return false;
+  const n=left(t); if(n===0) return true;
+  const pl=planner(), sum=total(t);
+  return pl.stopV[sum]>=pl.R(maskOf(t),sum,n);
 }
 function schedule(){
   clearTimeout(aiTimer);
@@ -466,7 +540,7 @@ function schedule(){
   const t=T(), sp=pref.fast?0.45:1;
   if(P().ai){
     // pick: eerst de worp laten zien, daarna de gekozen stenen laten oplichten
-    const d=t.phase==='pick'?(ui.aiChoice==null?1500:1300):({roll:800,decide:1300,done:2000}[t.phase]||900);
+    const d=t.phase==='pick'?(ui.aiChoice==null?1500:1300):({roll:800,decide:1300,done:2800}[t.phase]||900);
     aiTimer=setTimeout(aiStep,d*sp);
   }
 }
@@ -516,7 +590,10 @@ function miniHTML(n){
 function logoHTML(){return `<h1 class="logo"><svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="pwLogoBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff79a5"/><stop offset="1" stop-color="#dd2c69"/></linearGradient></defs><rect width="512" height="512" rx="120" fill="url(#pwLogoBg)"/><g transform="rotate(-9 256 256)"><rect x="110" y="110" width="292" height="292" rx="74" fill="#fff"/><path d="M168 298 C 190 220, 236 214, 256 262 S 322 314, 344 230" fill="none" stroke="#f2457d" stroke-width="44" stroke-linecap="round"/><circle cx="341" cy="220" r="10" fill="#1d1626"/></g></svg>Pierenworp</h1>`}
 
 function rulesHTML(){
+  const tiles=Array.from({length:16},(_,i)=>({n:21+i,st:'open'}));
   return `<details class="rules"><summary>Spelregels</summary>
+  <p>Op tafel ligt een rooster van zestien tegels, van 21 tot en met 36. Hoe hoger de tegel, hoe meer pieren hij waard is.</p>
+  <div class="grill rules-grill">${tiles.map(c=>tileHTML(c,null)).join('')}</div>
   <ol>
     <li>Je gooit met acht stenen. Die tonen 1 tot en met 5, of een pier. Een pier telt als 5.</li>
     <li>Na elke worp leg je álle stenen van één waarde apart. Die waarde mag je deze beurt niet nog eens kiezen.</li>
@@ -525,8 +602,21 @@ function rulesHTML(){
     <li>Gooi je geen nieuwe waarde, of valt er niets te pakken? Dan mislukt je beurt: je levert je bovenste tegel in en de hoogste open tegel gaat dicht.</li>
     <li>Het spel eindigt als er geen open tegels meer liggen. Wie de meeste pieren heeft, wint. Bij gelijke stand telt de hoogste tegel.</li>
   </ol>
-  <div class="tiers"><span>21–24 · 1 pier</span><span>25–28 · 2</span><span>29–32 · 3</span><span>33–36 · 4</span></div>
   </details>`;
+}
+const TILE_ICON='<svg class="ti" viewBox="0 0 10 14" aria-hidden="true"><rect x="1" y="1" width="8" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 9.2c.8-.9 1.5-.9 2 0s1.3.9 2 0" fill="none" stroke="var(--pink)" stroke-width="1.3" stroke-linecap="round"/></svg>';
+const WORM_STAT=WORM_ICON.replace('<svg ','<svg class="wi" ');
+function bigTileHTML(n){return `<div class="bigtile" aria-hidden="true"><div class="num">${n}</div><div class="worms">${WORM_ICON.repeat(wormsOf(n))}</div></div>`}
+function resultHTML(r,p){
+  const name=esc(p.name);
+  if(r.kind==='take'){ const w=wormsOf(r.n);
+    return `<div class="result take" role="status">${bigTileHTML(r.n)}<div class="r-text"><p class="r-title">${name} pakt ${r.n}</p><p class="r-sub">+${wl(w)}</p></div></div>`; }
+  if(r.kind==='steal'){ const w=wormsOf(r.n);
+    return `<div class="result steal" role="status">${bigTileHTML(r.n)}<div class="r-text"><p class="r-title">${name} pikt ${r.n} af</p><p class="r-sub">van ${esc(r.from)} · +${wl(w)}</p></div></div>`; }
+  let sub=esc(r.reason);
+  if(r.back) sub+=` ${name} levert ${r.back} in.`;
+  if(r.flipped) sub+=` Tegel ${r.flipped} gaat dicht.`;
+  return `<div class="result bust" role="alert"><span class="bust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg></span><div class="r-text"><p class="r-title">Mislukt!</p><p class="r-sub">${sub}</p></div></div>`;
 }
 
 function headerHTML(inGame){
@@ -545,11 +635,9 @@ function setupHTML(){
     <div class="seg" role="group" aria-label="Soort speler ${i+1}">
       ${['mens','computer','uit'].map(tp=>`<button data-act="seat" data-i="${i}" data-type="${tp}" aria-pressed="${s.type===tp}">${tp==='mens'?'Mens':tp==='computer'?'Computer':'Uit'}</button>`).join('')}
     </div></div>`).join('');
-  const preview=Array.from({length:16},(_,i)=>({n:21+i,st:'open'}));
   return headerHTML(false)+`
   <section class="hero"><h2>Gooi, kies en <em>durf</em> door te gaan.</h2>
   <p class="lede">Gooi acht dobbelstenen, leg telkens één waarde apart en verzamel tegels met zoveel mogelijk pieren.</p></section>
-  <section><p class="label">Het rooster</p><div class="grill">${preview.map(c=>tileHTML(c,null)).join('')}</div></section>
   <section><p class="label">Spelers</p><div class="seats">${rows}</div></section>
   ${ui.err?`<p class="err" role="alert">${ui.err}</p>`:''}
   ${rulesHTML()}
@@ -565,8 +653,9 @@ function gameHTML(){
     const cls=['pcard'];
     if(i===S.cur) cls.push('is-cur');
     if(tg&&tg.type==='steal'&&tg.from===i) cls.push('is-victim');
-    const w=score(p);
-    return `<div class="${cls.join(' ')}">${avatar(p.name,p.c??i)}<div class="who"><div class="name">${esc(p.name)}</div><div class="meta" title="${p.stack.length} ${p.stack.length===1?'tegel':'tegels'}">${WORM_ICON}<span><b>${w}</b> ${w===1?'pier':'pieren'}</span></div></div>${miniHTML(top)}</div>`;
+    if(i===S.cur&&t.phase==='done'&&t.result&&t.result.kind!=='bust') cls.push('got');
+    const w=score(p), k=p.stack.length;
+    return `<div class="${cls.join(' ')}">${avatar(p.name,p.c??i)}<div class="who"><div class="name">${esc(p.name)}</div><div class="meta" aria-label="${k} ${k===1?'tegel':'tegels'}, ${wl(w)}"><span class="stat" title="Tegels">${TILE_ICON}<b>${k}</b></span><span class="stat" title="Pieren">${WORM_STAT}<b>${w}</b></span></div></div>${miniHTML(top)}</div>`;
   }).join('');
 
   const kf=new Set(t.kept), s=total(t), ready=hasWorm(t)&&s>=21;
@@ -586,7 +675,7 @@ function gameHTML(){
   <section aria-label="Tegelrooster"><div class="grill">${S.center.map(c=>tileHTML(c,tg)).join('')}</div></section>
   <section aria-label="Spelers"><div class="players">${players}</div></section>
   <section class="card" aria-label="Worp van ${esc(me.name)}">
-    <p class="status" aria-live="polite">${S.msg}</p>
+    <p class="label" style="margin:0">Worp van ${esc(me.name)}</p>
     <div>
       <div class="score-row"><div class="tot">${s}<small>ogen</small></div><span class="chip${hasWorm(t)?' ok':''}">${WORM_ICON} ${hasWorm(t)?'pier binnen':'nog geen pier'}</span></div>
       <div class="meter-wrap" style="margin-top:12px">
@@ -596,8 +685,7 @@ function gameHTML(){
     </div>
     <div class="tray" aria-label="Apart gelegd">${keptDice}</div>
     ${t.rolled.length?`<div class="divider"></div><div class="rolled${canPick?' can':''}${choosing?' choosing':''}${ui.fresh?' fresh':''}" id="rolled">${rolled}</div>`:''}
-  </section>
-  ${rulesHTML()}`;
+  </section>`;
 }
 
 function overHTML(){
@@ -616,10 +704,17 @@ function dockHTML(){
   if(S.over) return `<div class="dock-in"><button class="btn" data-act="again">Nog een potje</button><button class="btn soft" data-act="new">Andere spelers</button></div>`;
   if(ui.confirm) return `<div class="dock-in" role="alertdialog" aria-label="Nieuw spel"><p>Dit spel stoppen en opnieuw beginnen?</p><button class="btn soft" data-act="cancel-new">Doorspelen</button><button class="btn" data-act="new">Nieuw spel</button></div>`;
   const t=T(), me=P();
-  if(me.ai) return `<div class="dock-in"><div class="wait"><span class="dots"><i></i><i></i><i></i></span>${esc(me.name)} is aan zet</div></div>`;
-  let a='';
-  if(t.phase==='roll') a=`<button class="btn" data-act="roll">Gooi ${left(t)} stenen</button>`;
-  else if(t.phase==='pick') a=`<div class="wait">Kies een waarde uit je worp</div>`;
+  if(t.phase==='done'&&t.result){
+    const r=resultHTML(t.result,me);
+    if(me.ai) return `<div class="dock-in">${r}</div>`;
+    const nxt=S.players[(S.cur+1)%S.players.length];
+    const end=!S.center.some(c=>c.st==='open');
+    return `<div class="dock-in">${r}<button class="btn" data-act="next">${end?'Bekijk de uitslag':`Verder naar ${esc(nxt.name)}`}</button></div>`;
+  }
+  const msg=`<p class="dock-msg" aria-live="polite">${S.msg}</p>`;
+  if(me.ai) return `<div class="dock-in"><div class="wait"><span class="dots"><i></i><i></i><i></i></span><span class="dock-msg" aria-live="polite">${S.msg}</span></div></div>`;
+  let a=msg;
+  if(t.phase==='roll') a+=`<button class="btn" data-act="roll">Gooi ${left(t)} stenen</button>`;
   else if(t.phase==='decide'){
     const tg=target();
     if(tg) a+=`<button class="btn go" data-act="stop">${tg.type==='steal'?`Pik ${tg.n} af`:`Pak ${tg.n}`}</button>`;
