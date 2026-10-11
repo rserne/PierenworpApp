@@ -40,4 +40,4 @@ Open daarna http://localhost:8000 in je browser.
 
 ## Een nieuwe versie uitrollen
 
-Verhoog in `sw.js` het versienummer, bijvoorbeeld van `pierenworp-v5` naar `pierenworp-v6`. Geïnstalleerde apps halen dan bij de volgende start de nieuwe bestanden op.
+Verhoog in `sw.js` het versienummer, bijvoorbeeld van `pierenworp-v6` naar `pierenworp-v7`. Geïnstalleerde apps halen dan bij de volgende start de nieuwe bestanden op.
