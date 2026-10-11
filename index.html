@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f1f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pierenworp">
+<title>Pierenworp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Onest:wght@400;500;700&display=swap">
+<style>
+/* Layout: mobiele app — compacte kop met pictogramknoppen, tegelrooster, spelerskaarten, worpkaart met voortgangsbalk naar 21, en een vaste actiebalk onderin binnen duimbereik. Volgt licht/donker van het toestel. */
+:root{
+  --bg:#f4f1f6; --surface:#ffffff; --surface-2:#ebe6ef; --line:rgba(29,22,38,.10);
+  --ink:#1d1626; --muted:#6c6276;
+  --pink:#f2457d; --pink-ink:#ffffff; --pink-soft:#ffe0ea;
+  --mint:#12b98d; --mint-ink:#ffffff; --mint-soft:#d6f5ea;
+  --die:#ffffff; --pip:#1d1626; --tile:#ffffff;
+  --shadow:0 1px 2px rgba(29,22,38,.06),0 6px 20px rgba(29,22,38,.07);
+  --shadow-lift:0 2px 4px rgba(29,22,38,.08),0 14px 30px rgba(29,22,38,.14);
+  --dock:rgba(244,241,246,.82);
+  --p1:#e23d73; --p2:#6a4cf0; --p3:#0f9a77; --p4:#cf7a12; --p5:#1c82d0; --p6:#d6512a;
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:18px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#110d15; --surface:#1c1722; --surface-2:#29222f; --line:rgba(255,255,255,.08);
+  --ink:#f3eef7; --muted:#a297ac;
+  --pink:#ff5f93; --pink-ink:#1d0b13; --pink-soft:rgba(255,95,147,.16);
+  --mint:#34dcab; --mint-ink:#04201a; --mint-soft:rgba(52,220,171,.15);
+  --die:#f8f4fb; --pip:#1d1626; --tile:#241e2a;
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
+  --shadow-lift:0 1px 0 rgba(255,255,255,.06) inset,0 16px 34px rgba(0,0,0,.55);
+  --dock:rgba(17,13,21,.82);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#110d15; --surface:#1c1722; --surface-2:#29222f; --line:rgba(255,255,255,.08);
+  --ink:#f3eef7; --muted:#a297ac;
+  --pink:#ff5f93; --pink-ink:#1d0b13; --pink-soft:rgba(255,95,147,.16);
+  --mint:#34dcab; --mint-ink:#04201a; --mint-soft:rgba(52,220,171,.15);
+  --die:#f8f4fb; --pip:#1d1626; --tile:#241e2a;
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
+  --shadow-lift:0 1px 0 rgba(255,255,255,.06) inset,0 16px 34px rgba(0,0,0,.55);
+  --dock:rgba(17,13,21,.82);
+  color-scheme:dark;
+}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:12px calc(128px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:20px}
+
+/* kop */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;margin:0;font-family:var(--f-display);font-weight:700;font-size:21px;letter-spacing:-.02em}
+.logo .mark{width:38px;height:38px;flex:none;border-radius:11px;box-shadow:var(--shadow)}
+.icons{display:flex;gap:6px}
+.ib{width:40px;height:40px;border-radius:12px;border:0;background:var(--surface);box-shadow:var(--shadow);display:grid;place-items:center;color:var(--ink)}
+.ib svg{width:20px;height:20px}
+.ib[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+.label{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+
+/* tegelrooster */
+.grill{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.tile{position:relative;aspect-ratio:3/4.4;border-radius:11px;background:var(--tile);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:7px 0 8px;transition:transform .25s cubic-bezier(.2,.9,.3,1.3),box-shadow .25s,background .25s}
+.tile .num{font-family:var(--f-display);font-weight:600;font-size:clamp(12px,3.6vw,17px);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.tile .worms{display:flex;flex-direction:column;gap:2px;width:62%}
+.tile .worms svg{width:100%;height:auto;display:block}
+.tile.flipped{background:var(--surface-2);box-shadow:none}
+.tile.flipped::after{content:"";position:absolute;inset:0;border-radius:inherit;background:repeating-linear-gradient(135deg,transparent 0 6px,var(--line) 6px 8px)}
+.tile.flipped>*,.tile.taken>*{visibility:hidden}
+.tile.taken{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+.tile.is-target{transform:translateY(-6px) scale(1.04);box-shadow:0 0 0 2.5px var(--mint),var(--shadow-lift)}
+
+/* spelers */
+.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.pcard{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:10px 12px;display:flex;align-items:center;gap:10px;min-width:0;transition:box-shadow .2s}
+.pcard.is-cur{box-shadow:0 0 0 2px var(--pink),var(--shadow)}
+.pcard.is-victim{box-shadow:0 0 0 2px var(--mint),var(--shadow-lift)}
+.avatar{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff;background:var(--c)}
+.pcard .who{flex:1;min-width:0}
+.pcard .name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.pcard .meta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:5px;white-space:nowrap}
+.pcard .meta svg{width:16px;height:6px}
+.pcard .meta b{color:var(--ink);font-variant-numeric:tabular-nums}
+.mini{width:28px;height:40px;flex:none;border-radius:7px;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4px 0 5px}
+.mini .num{font-family:var(--f-display);font-weight:600;font-size:10.5px;letter-spacing:-.03em}
+.mini .worms{display:flex;flex-direction:column;gap:1px;width:64%}
+.mini .worms svg{width:100%;height:auto;display:block}
+.mini.empty{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+
+/* worpkaart */
+.card{background:var(--surface);border-radius:24px;box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:16px}
+.status{margin:0;font-size:16px;font-weight:500;min-height:1.45em;text-wrap:balance}
+.status b{font-weight:700;color:var(--pink)}
+.score-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.tot{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.tot small{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--surface-2);color:var(--muted)}
+.chip svg{width:20px;height:8px}
+.chip.ok{background:var(--pink-soft);color:var(--pink)}
+.meter{position:relative;height:8px;border-radius:99px;background:var(--surface-2);overflow:visible}
+.meter .fill{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:var(--pink);transition:width .45s cubic-bezier(.2,.9,.3,1)}
+.meter .fill.ok{background:var(--mint)}
+.meter .mark{position:absolute;top:-4px;bottom:-4px;width:2px;border-radius:2px;background:var(--ink);opacity:.5}
+.meter-legend{position:relative;display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;font-variant-numeric:tabular-nums}
+.meter-legend span:nth-child(2){position:absolute;top:0;transform:translateX(-50%);font-weight:700;color:var(--ink)}
+.meter-wrap{position:relative}
+.tray{display:flex;flex-wrap:wrap;gap:6px;min-height:30px;align-items:center}
+.empty-tray{color:var(--muted);font-size:14px}
+.die{width:56px;height:56px;padding:0;border:0;background:none;border-radius:14px;flex:none;transition:transform .18s cubic-bezier(.2,.9,.3,1.4),opacity .15s}
+.die svg{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 8px rgba(29,22,38,.18))}
+.die.sm{width:30px;height:30px}
+.die.sm svg{filter:drop-shadow(0 1px 2px rgba(29,22,38,.18))}
+.rolled{display:flex;flex-wrap:wrap;gap:9px;min-height:56px}
+.rolled .die:disabled{opacity:.28;cursor:default}
+.rolled.can .die:not(:disabled):hover,.rolled.can .die.hi{transform:translateY(-6px) scale(1.04)}
+.rolled.fresh .die{animation:tumble .5s cubic-bezier(.2,.9,.3,1.25) both;animation-delay:calc(var(--i)*45ms)}
+@keyframes tumble{from{transform:translate(-28px,-16px) rotate(-210deg) scale(.7);opacity:0}to{transform:none;opacity:1}}
+.divider{height:1px;background:var(--line);margin:0}
+
+/* actiebalk */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));background:var(--dock);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border-top:1px solid var(--line)}
+.dock-in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dock-in p{margin:0;flex:1 1 100%;font-weight:600;font-size:15px}
+.btn{flex:1 1 140px;min-height:54px;border:0;border-radius:16px;padding:0 18px;font-weight:700;font-size:16.5px;background:var(--pink);color:var(--pink-ink);box-shadow:0 6px 16px -6px var(--pink);transition:transform .12s,filter .12s}
+.btn:active{transform:scale(.97)}
+.btn:hover{filter:brightness(1.05)}
+.btn.go{background:var(--mint);color:var(--mint-ink);box-shadow:0 6px 16px -6px var(--mint)}
+.btn.soft{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.wait{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--muted);min-height:54px}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--pink);animation:blink 1s infinite both}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:none}}
+
+/* setup */
+.hero{display:flex;flex-direction:column;gap:10px}
+.hero h2{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,7vw,36px);line-height:1.05;letter-spacing:-.035em;margin:0;text-wrap:balance}
+.hero h2 em{font-style:normal;color:var(--pink)}
+.lede{margin:0;font-size:16px;color:var(--muted);max-width:44ch;text-wrap:pretty}
+.seats{display:flex;flex-direction:column;gap:8px}
+.seat{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);box-shadow:var(--shadow);border-radius:var(--r);padding:8px 8px 8px 10px}
+.seat input{flex:1 1 100px;min-width:0;background:transparent;border:0;padding:8px 2px;font:inherit;font-weight:600;color:var(--ink)}
+.seat.off{box-shadow:none;background:transparent;outline:1.5px dashed var(--line);outline-offset:-1.5px}
+.seat.off input,.seat.off .avatar{opacity:.4}
+.seg{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;border-radius:9px;padding:7px 10px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(29,22,38,.15)}
+.err{color:var(--pink);font-weight:600;margin:0}
+
+/* regels */
+details.rules{background:var(--surface);box-shadow:var(--shadow);border-radius:var(--r);padding:2px 18px}
+details.rules summary{font-weight:700;padding:14px 0;cursor:pointer}
+details.rules ol{margin:0 0 14px;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:62ch;color:var(--muted)}
+.tiers{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px;font-size:13px}
+.tiers span{background:var(--surface-2);border-radius:8px;padding:4px 9px;font-variant-numeric:tabular-nums;font-weight:500}
+
+/* einde */
+.podium{display:flex;flex-direction:column;gap:8px}
+.prow{display:grid;grid-template-columns:28px 34px 1fr auto;align-items:center;gap:12px;background:var(--surface);box-shadow:var(--shadow);border-radius:var(--r);padding:12px 16px}
+.prow.win{box-shadow:0 0 0 2px var(--pink),var(--shadow-lift)}
+.prow .place{font-family:var(--f-display);font-weight:700;font-size:18px;color:var(--muted)}
+.prow.win .place{color:var(--pink)}
+.prow .name{font-weight:700}
+.prow .meta{font-size:13px;color:var(--muted)}
+.prow .score{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.foot{font-size:13px;color:var(--muted);text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}html,body{height:auto}</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+<div class="dock" id="dock"></div>
+
+<script>
+(function(){
+"use strict";
+const KEY='pierenworp-v1';
+const AI_NAMES=['Pip','Mo','Bo','Lies','Teun'];
+const val=f=>f===6?5:f;
+const wormsOf=n=>n<=24?1:n<=28?2:n<=32?3:4;
+const wl=n=>n===1?'1 pier':n+' pieren';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let S=null;
+let seats=[
+  {name:'Jij',type:'mens'},{name:'Pip',type:'computer'},{name:'Mo',type:'computer'},
+  {name:'Bo',type:'uit'},{name:'Lies',type:'uit'},{name:'Teun',type:'uit'}
+];
+let pref={fast:false,sound:true};
+const soundOn=()=>pref.sound!==false;
+const ui={confirm:false,fresh:false,err:''};
+let aiTimer=null;
+
+/* ---------- geluid: dobbelstenen, live opgewekt met Web Audio ---------- */
+let actx=null, master=null, noiseBuf=null;
+function audio(){
+  if(!soundOn()) return null;
+  try{
+    if(!actx){
+      // iOS 17+: speel af als 'media', zodat de stilteknop het geluid niet dempt
+      try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
+      const C=window.AudioContext||window.webkitAudioContext; if(!C) return null;
+      actx=new C();
+      const comp=actx.createDynamicsCompressor();
+      master=actx.createGain(); master.gain.value=0.9;
+      master.connect(comp).connect(actx.destination);
+    }
+    if(actx.state==='suspended') actx.resume();
+    return actx;
+  }catch(e){return null}
+}
+function noise(ctx){
+  if(noiseBuf) return noiseBuf;
+  const len=Math.floor(ctx.sampleRate*0.06), b=ctx.createBuffer(1,len,ctx.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  return noiseBuf=b;
+}
+function clack(ctx,t,vol){
+  const src=ctx.createBufferSource(); src.buffer=noise(ctx);
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass';
+  bp.frequency.value=1800+Math.random()*2600; bp.Q.value=2.5+Math.random()*3;
+  const g=ctx.createGain(), end=t+0.03+Math.random()*0.03;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.002); g.gain.exponentialRampToValueAtTime(0.0001,end);
+  src.connect(bp).connect(g).connect(master); src.start(t); src.stop(end+0.01);
+  const o=ctx.createOscillator(); o.type='triangle'; o.frequency.setValueAtTime(600+Math.random()*700,t);
+  const og=ctx.createGain();
+  og.gain.setValueAtTime(0.0001,t); og.gain.exponentialRampToValueAtTime(vol*0.45,t+0.002); og.gain.exponentialRampToValueAtTime(0.0001,t+0.04);
+  o.connect(og).connect(master); o.start(t); o.stop(t+0.05);
+}
+function withCtx(fn){
+  const ctx=audio(); if(!ctx) return;
+  if(ctx.state==='running') fn(ctx);
+  else ctx.resume().then(()=>{ if(ctx.state==='running') fn(ctx); }).catch(()=>{});
+}
+let silentUrl=null, unlocked=false;
+function silentWav(){
+  if(silentUrl) return silentUrl;
+  const n=800, buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
+  const w=(o,s)=>{for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i))};
+  w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,8000,true); v.setUint32(28,16000,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  w(36,'data'); v.setUint32(40,n*2,true);
+  return silentUrl=URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+}
+// Geluid ontgrendelen binnen een echte tik (touchend/click tellen op iOS, pointerdown niet)
+function unlockAudio(){
+  if(!soundOn()) return;
+  const ctx=audio(); if(!ctx) return;
+  if(ctx.state!=='running'){ try{ctx.resume()}catch(e){} }
+  if(!unlocked){
+    unlocked=true;
+    try{ const b=ctx.createBuffer(1,1,22050), s=ctx.createBufferSource(); s.buffer=b; s.connect(ctx.destination); s.start(0); }catch(e){}
+    try{ const el=new Audio(silentWav()); el.setAttribute('playsinline',''); const p=el.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){}
+  }
+}
+function playRoll(n){ withCtx(ctx=>rollSound(ctx,n)); }
+function rollSound(ctx,n){
+  const now=ctx.currentTime+0.02;
+  for(let i=0;i<8+n*2;i++) clack(ctx,now+Math.random()*0.18,0.04+Math.random()*0.05);
+  for(let d=0;d<n;d++){
+    let t=now+0.2+Math.random()*0.14, gap=0.08+Math.random()*0.05, v=0.16+Math.random()*0.1;
+    const bounces=2+Math.floor(Math.random()*2);
+    for(let k=0;k<bounces;k++){ clack(ctx,t,v); t+=gap; gap*=0.55; v*=0.45; }
+  }
+}
+function playSetAside(n){
+  withCtx(ctx=>{
+    const now=ctx.currentTime+0.01;
+    for(let i=0;i<Math.min(n,5);i++) clack(ctx,now+i*0.045,0.09);
+  });
+}
+
+/* ---------- opslag ---------- */
+function save(){try{localStorage.setItem(KEY,JSON.stringify({S,seats,pref}))}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
+
+/* ---------- spellogica ---------- */
+const T=()=>S.turn, P=()=>S.players[S.cur];
+const total=t=>t.kept.reduce((a,f)=>a+val(f),0);
+const hasWorm=t=>t.kept.includes(6);
+const left=t=>8-t.kept.length;
+const canPickAny=t=>{const k=new Set(t.kept);return t.rolled.some(f=>!k.has(f))};
+const score=p=>p.stack.reduce((a,n)=>a+wormsOf(n),0);
+const humans=()=>S.players.filter(p=>!p.ai).length;
+
+function target(){
+  const t=T(), s=total(t);
+  if(!hasWorm(t)||s<21) return null;
+  for(let i=0;i<S.players.length;i++){
+    if(i===S.cur) continue;
+    const st=S.players[i].stack;
+    if(st.length&&st[st.length-1]===s) return {type:'steal',from:i,n:s};
+  }
+  let best=null;
+  for(const c of S.center) if(c.st==='open'&&c.n<=s) best=c.n;
+  return best?{type:'center',n:best}:null;
+}
+function freshTurn(){return {rolled:[],kept:[],phase:'roll'}}
+function turnIntro(){
+  const p=P();
+  if(p.ai) return `<b>${esc(p.name)}</b> is aan de beurt.`;
+  return humans()>1?`<b>${esc(p.name)}</b>, jouw beurt. Gooi de stenen.`:'Jouw beurt. Gooi de stenen.';
+}
+function decideMsg(tg){
+  const t=T(), p=P(), s=total(t);
+  if(p.ai) return `<b>${esc(p.name)}</b> heeft ${s}${hasWorm(t)?' met pier':''}…`;
+  if(tg){
+    const what=tg.type==='steal'?`tegel ${tg.n} van ${esc(S.players[tg.from].name)} afpikken`:`tegel ${tg.n} pakken`;
+    return left(t)?`Je kunt ${what}, of verder gooien met ${left(t)} ${left(t)===1?'steen':'stenen'}.`:`Je kunt ${what}.`;
+  }
+  if(!hasWorm(t)&&s>=21) return 'Je hebt genoeg ogen, maar nog geen pier. Gooi verder.';
+  if(s<21) return `Nog ${21-s} te gaan tot 21. Gooi verder.`;
+  return 'Geen tegel binnen bereik. Gooi verder.';
+}
+
+function startGame(){
+  const act=seats.map((s,i)=>({...s,seat:i})).filter(s=>s.type!=='uit');
+  if(act.length<2){ui.err='Kies minstens twee spelers.';render();return}
+  ui.err='';
+  S={
+    players:act.map((s,i)=>({name:(s.name||'').trim()||(s.type==='computer'?AI_NAMES[i%AI_NAMES.length]:'Speler '+(i+1)),ai:s.type==='computer',stack:[],c:s.seat})),
+    center:Array.from({length:16},(_,i)=>({n:21+i,st:'open'})),
+    cur:0,turn:freshTurn(),msg:'',over:false
+  };
+  S.msg=turnIntro();
+  commit();
+}
+
+function doRoll(){
+  const t=T();
+  if(!(t.phase==='roll'||(t.phase==='decide'&&left(t)>0))) return;
+  t.rolled=Array.from({length:left(t)},()=>1+Math.floor(Math.random()*6));
+  ui.fresh=true;
+  playRoll(t.rolled.length);
+  if(!canPickAny(t)){ bust('Geen enkele nieuwe waarde gegooid.'); }
+  else { t.phase='pick'; S.msg=P().ai?`<b>${esc(P().name)}</b> kiest…`:'Tik een steen aan om alle stenen met die waarde apart te leggen.'; }
+  commit();
+}
+function doPick(f){
+  const t=T();
+  if(t.phase!=='pick'||t.kept.includes(f)||!t.rolled.includes(f)) return;
+  const picked=t.rolled.filter(x=>x===f);
+  t.kept.push(...picked);
+  playSetAside(picked.length);
+  t.rolled=[]; ui.fresh=false;
+  const tg=target();
+  if(left(t)===0&&!tg) bust('Alle stenen liggen apart, maar er valt niets te pakken.');
+  else { t.phase='decide'; S.msg=decideMsg(tg); }
+  commit();
+}
+function doStop(){
+  const t=T(); if(t.phase!=='decide') return;
+  const tg=target(); if(!tg) return;
+  const me=P();
+  if(tg.type==='steal'){
+    const v=S.players[tg.from]; v.stack.pop(); me.stack.push(tg.n);
+    S.msg=`<b>${esc(me.name)}</b> pikt tegel ${tg.n} af van ${esc(v.name)}.`;
+  }else{
+    S.center.find(c=>c.n===tg.n).st='taken'; me.stack.push(tg.n);
+    S.msg=`<b>${esc(me.name)}</b> pakt tegel ${tg.n}: ${wl(wormsOf(tg.n))}.`;
+  }
+  t.phase='done'; t.rolled=[]; ui.fresh=false;
+  commit();
+}
+function bust(reason){
+  const t=T(), me=P();
+  t.phase='done';
+  let back=null;
+  if(me.stack.length){ back=me.stack.pop(); S.center.find(c=>c.n===back).st='open'; }
+  const open=S.center.filter(c=>c.st==='open');
+  const hi=open[open.length-1];
+  let flipped=null;
+  if(hi&&hi.n!==back){ hi.st='flipped'; flipped=hi.n; }
+  let m=`Mislukt! ${reason}`;
+  if(back) m+=` ${esc(me.name)} levert tegel ${back} in.`;
+  if(flipped) m+=` Tegel ${flipped} gaat dicht.`;
+  S.msg=m;
+}
+function advance(){
+  if(T().phase!=='done') return;
+  ui.fresh=false;
+  if(!S.center.some(c=>c.st==='open')){ S.over=true; commit(); return; }
+  S.cur=(S.cur+1)%S.players.length;
+  S.turn=freshTurn(); S.msg=turnIntro();
+  commit();
+}
+function commit(){save();render();schedule()}
+
+/* ---------- computerspeler ---------- */
+function aiPick(t){
+  const kf=new Set(t.kept), counts={};
+  t.rolled.forEach(f=>{if(!kf.has(f))counts[f]=(counts[f]||0)+1});
+  const l=left(t), worm=hasWorm(t), tot=total(t);
+  let best=null, bs=-Infinity;
+  for(const k in counts){
+    const f=+k, c=counts[f], after=l-c, sum=tot+c*val(f);
+    let s=c*val(f);
+    if(f===6) s+=worm?1:7;
+    if(f<=3) s-=c*1.6;
+    if(after===0&&!worm&&f!==6) s-=100;
+    if(after===0&&sum<21) s-=100;
+    if(after<=1&&!worm&&f!==6) s-=8;
+    if(s>bs){bs=s;best=f}
+  }
+  return best;
+}
+function aiShouldStop(t){
+  const tg=target(); if(!tg) return false;
+  const l=left(t); if(l===0) return true;
+  const k=new Set(t.kept).size;
+  const bustNext=Math.pow(k/6,l);
+  const w=wormsOf(tg.n);
+  if(tg.type==='steal'&&w>=2) return true;
+  if(l<=2) return true;
+  if(w>=3) return true;
+  if(bustNext>0.18) return true;
+  if(l<=3&&w>=2) return true;
+  return false;
+}
+function schedule(){
+  clearTimeout(aiTimer);
+  if(!S||S.over) return;
+  const t=T(), sp=pref.fast?0.45:1;
+  if(P().ai){
+    const d={roll:700,pick:1000,decide:750,done:1500}[t.phase]||800;
+    aiTimer=setTimeout(aiStep,d*sp);
+  }
+}
+function aiStep(){
+  if(!S||S.over||!P().ai) return;
+  const t=T();
+  if(t.phase==='roll') doRoll();
+  else if(t.phase==='pick') doPick(aiPick(t));
+  else if(t.phase==='decide'){ if(aiShouldStop(t)) doStop(); else doRoll(); }
+  else if(t.phase==='done') advance();
+}
+
+/* ---------- tekenwerk ---------- */
+const PIPS={1:[[20,20]],2:[[12.5,12.5],[27.5,27.5]],3:[[12.5,12.5],[20,20],[27.5,27.5]],4:[[12.5,12.5],[27.5,12.5],[12.5,27.5],[27.5,27.5]],5:[[12.5,12.5],[27.5,12.5],[20,20],[12.5,27.5],[27.5,27.5]]};
+const WORM_FACE='<path d="M8.5 25.5 C 11.5 14.5, 17 13.5, 20 20.5 S 28 28.5, 31.5 16" fill="none" stroke="var(--pink)" stroke-width="5" stroke-linecap="round"/><circle cx="31" cy="15.4" r="1.3" fill="var(--pip)"/>';
+function dieSVG(f){
+  const inner=f===6?WORM_FACE:PIPS[f].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3.5" fill="var(--pip)"/>`).join('');
+  return `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="1" y="1" width="38" height="38" rx="10" fill="var(--die)"/><rect x="1" y="1" width="38" height="38" rx="10" fill="none" stroke="rgba(29,22,38,.08)"/>${inner}</svg>`;
+}
+const WORM_ICON='<svg viewBox="0 0 24 8" aria-hidden="true"><path d="M2.5 5 C 6 1.2, 9 1.2, 12 4 S 18 6.8, 21.5 3" fill="none" stroke="var(--pink)" stroke-width="2.6" stroke-linecap="round"/></svg>';
+const faceName=f=>f===6?'pier':String(f);
+const ICON={
+  soundOn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
+  soundOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
+  fast:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg>',
+  restart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg>'
+};
+const avatar=(name,c)=>`<span class="avatar" style="--c:var(--p${(c%6)+1})" aria-hidden="true">${esc((name||'?').trim().charAt(0).toUpperCase()||'?')}</span>`;
+
+function tileHTML(c,tg){
+  const cls=['tile',c.st];
+  if(c.st==='open'&&tg&&tg.type==='center'&&tg.n===c.n) cls.push('is-target');
+  const label=c.st==='open'?`Tegel ${c.n}, ${wl(wormsOf(c.n))}`:c.st==='flipped'?`Tegel ${c.n}, dicht`:`Tegel ${c.n}, gepakt`;
+  return `<div class="${cls.join(' ')}" role="img" aria-label="${label}"><div class="num">${c.n}</div><div class="worms">${WORM_ICON.repeat(wormsOf(c.n))}</div></div>`;
+}
+function miniHTML(n){
+  if(n==null) return '<div class="mini empty" aria-hidden="true"></div>';
+  return `<div class="mini" aria-hidden="true"><div class="num">${n}</div><div class="worms">${WORM_ICON.repeat(wormsOf(n))}</div></div>`;
+}
+function logoHTML(){return `<h1 class="logo"><svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="pwLogoBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff79a5"/><stop offset="1" stop-color="#dd2c69"/></linearGradient></defs><rect width="512" height="512" rx="120" fill="url(#pwLogoBg)"/><g transform="rotate(-9 256 256)"><rect x="110" y="110" width="292" height="292" rx="74" fill="#fff"/><path d="M168 298 C 190 220, 236 214, 256 262 S 322 314, 344 230" fill="none" stroke="#f2457d" stroke-width="44" stroke-linecap="round"/><circle cx="341" cy="220" r="10" fill="#1d1626"/></g></svg>Pierenworp</h1>`}
+
+function rulesHTML(){
+  return `<details class="rules"><summary>Spelregels</summary>
+  <ol>
+    <li>Je gooit met acht stenen. Die tonen 1 tot en met 5, of een pier. Een pier telt als 5.</li>
+    <li>Na elke worp leg je álle stenen van één waarde apart. Die waarde mag je deze beurt niet nog eens kiezen.</li>
+    <li>Je mag stoppen zodra je minstens 21 hebt én er een pier apart ligt. Je pakt dan de tegel met je totaal, of de hoogste lagere tegel die nog open ligt.</li>
+    <li>Ligt jouw precieze totaal bovenop de stapel van een ander? Dan pik je die tegel af.</li>
+    <li>Gooi je geen nieuwe waarde, of valt er niets te pakken? Dan mislukt je beurt: je levert je bovenste tegel in en de hoogste open tegel gaat dicht.</li>
+    <li>Het spel eindigt als er geen open tegels meer liggen. Wie de meeste pieren heeft, wint. Bij gelijke stand telt de hoogste tegel.</li>
+  </ol>
+  <div class="tiers"><span>21–24 · 1 pier</span><span>25–28 · 2</span><span>29–32 · 3</span><span>33–36 · 4</span></div>
+  </details>`;
+}
+
+function headerHTML(inGame){
+  const snd=soundOn();
+  return `<header class="top">${logoHTML()}<div class="icons">
+    <button class="ib" data-act="sound" aria-pressed="false" aria-label="${snd?'Geluid uitzetten':'Geluid aanzetten'}" title="${snd?'Geluid staat aan':'Geluid staat uit'}">${snd?ICON.soundOn:ICON.soundOff}</button>
+    ${inGame?`<button class="ib" data-act="fast" aria-pressed="${!!pref.fast}" aria-label="Vlot tempo voor computerspelers" title="Vlot tempo">${ICON.fast}</button>
+    <button class="ib" data-act="ask-new" aria-label="Nieuw spel" title="Nieuw spel">${ICON.restart}</button>`:''}
+  </div></header>`;
+}
+
+function setupHTML(){
+  const rows=seats.map((s,i)=>`<div class="seat${s.type==='uit'?' off':''}">
+    ${avatar(s.name,i)}
+    <input id="seat-name-${i}" data-seat="${i}" value="${esc(s.name)}" maxlength="14" aria-label="Naam speler ${i+1}" autocomplete="off">
+    <div class="seg" role="group" aria-label="Soort speler ${i+1}">
+      ${['mens','computer','uit'].map(tp=>`<button data-act="seat" data-i="${i}" data-type="${tp}" aria-pressed="${s.type===tp}">${tp==='mens'?'Mens':tp==='computer'?'Computer':'Uit'}</button>`).join('')}
+    </div></div>`).join('');
+  const preview=Array.from({length:16},(_,i)=>({n:21+i,st:'open'}));
+  return headerHTML(false)+`
+  <section class="hero"><h2>Gooi, kies en <em>durf</em> door te gaan.</h2>
+  <p class="lede">Gooi acht dobbelstenen, leg telkens één waarde apart en verzamel tegels met zoveel mogelijk pieren.</p></section>
+  <section><p class="label">Het rooster</p><div class="grill">${preview.map(c=>tileHTML(c,null)).join('')}</div></section>
+  <section><p class="label">Spelers</p><div class="seats">${rows}</div></section>
+  ${ui.err?`<p class="err" role="alert">${ui.err}</p>`:''}
+  ${rulesHTML()}
+  <p class="foot">Mensen spelen om de beurt op hetzelfde toestel.</p>`;
+}
+
+function gameHTML(){
+  const t=T(), me=P(), tg=(t.phase==='decide')?target():null;
+  const human=!me.ai;
+
+  const players=S.players.map((p,i)=>{
+    const top=p.stack.length?p.stack[p.stack.length-1]:null;
+    const cls=['pcard'];
+    if(i===S.cur) cls.push('is-cur');
+    if(tg&&tg.type==='steal'&&tg.from===i) cls.push('is-victim');
+    const w=score(p);
+    return `<div class="${cls.join(' ')}">${avatar(p.name,p.c??i)}<div class="who"><div class="name">${esc(p.name)}</div><div class="meta" title="${p.stack.length} ${p.stack.length===1?'tegel':'tegels'}">${WORM_ICON}<span><b>${w}</b> ${w===1?'pier':'pieren'}</span></div></div>${miniHTML(top)}</div>`;
+  }).join('');
+
+  const kf=new Set(t.kept), s=total(t), ready=hasWorm(t)&&s>=21;
+  const keptDice=t.kept.length?t.kept.map(f=>`<span class="die sm" title="${faceName(f)}">${dieSVG(f)}</span>`).join(''):'<span class="empty-tray">Nog niets apart gelegd</span>';
+  const canPick=human&&t.phase==='pick';
+  const rolled=t.rolled.map((f,i)=>{
+    const dis=!canPick||kf.has(f);
+    return `<button class="die" style="--i:${i}" data-act="pick" data-f="${f}" ${dis?'disabled':''} aria-label="Leg alle ${f===6?'pieren':f+'-en'} apart">${dieSVG(f)}</button>`;
+  }).join('');
+  const pct=Math.min(s,40)/40*100;
+
+  return headerHTML(true)+`
+  <section aria-label="Tegelrooster"><div class="grill">${S.center.map(c=>tileHTML(c,tg)).join('')}</div></section>
+  <section aria-label="Spelers"><div class="players">${players}</div></section>
+  <section class="card" aria-label="Worp van ${esc(me.name)}">
+    <p class="status" aria-live="polite">${S.msg}</p>
+    <div>
+      <div class="score-row"><div class="tot">${s}<small>ogen</small></div><span class="chip${hasWorm(t)?' ok':''}">${WORM_ICON} ${hasWorm(t)?'pier binnen':'nog geen pier'}</span></div>
+      <div class="meter-wrap" style="margin-top:12px">
+        <div class="meter" role="progressbar" aria-label="Totaal" aria-valuemin="0" aria-valuemax="40" aria-valuenow="${s}"><div class="fill${ready?' ok':''}" style="width:${pct}%"></div><span class="mark" style="left:52.5%"></span></div>
+        <div class="meter-legend"><span>0</span><span style="left:52.5%">21</span><span>40</span></div>
+      </div>
+    </div>
+    <div class="tray" aria-label="Apart gelegd">${keptDice}</div>
+    ${t.rolled.length?`<div class="divider"></div><div class="rolled${canPick?' can':''}${ui.fresh?' fresh':''}" id="rolled">${rolled}</div>`:''}
+  </section>
+  ${rulesHTML()}`;
+}
+
+function overHTML(){
+  const ranked=S.players.map((p,i)=>({p,i,w:score(p),hi:p.stack.length?Math.max(...p.stack):0})).sort((a,b)=>b.w-a.w||b.hi-a.hi);
+  const win=ranked[0];
+  const youWin=!win.p.ai&&humans()===1;
+  const head=youWin?'Je hebt <em>gewonnen!</em>':`<em>${esc(win.p.name)}</em> wint!`;
+  const rows=ranked.map((r,i)=>`<div class="prow${i===0?' win':''}"><span class="place">${i+1}</span>${avatar(r.p.name,r.p.c??r.i)}<div><div class="name">${esc(r.p.name)}</div><div class="meta">${r.p.stack.length} ${r.p.stack.length===1?'tegel':'tegels'}${r.hi?` · hoogste ${r.hi}`:''}</div></div><span class="score">${r.w}</span></div>`).join('');
+  return headerHTML(false)+`
+  <section class="hero"><p class="label">Uitslag</p><h2>${head}</h2></section>
+  <div class="podium">${rows}</div>`;
+}
+
+function dockHTML(){
+  if(!S) return `<div class="dock-in"><button class="btn go" data-act="start">Start het spel</button></div>`;
+  if(S.over) return `<div class="dock-in"><button class="btn" data-act="again">Nog een potje</button><button class="btn soft" data-act="new">Andere spelers</button></div>`;
+  if(ui.confirm) return `<div class="dock-in" role="alertdialog" aria-label="Nieuw spel"><p>Dit spel stoppen en opnieuw beginnen?</p><button class="btn soft" data-act="cancel-new">Doorspelen</button><button class="btn" data-act="new">Nieuw spel</button></div>`;
+  const t=T(), me=P();
+  if(me.ai) return `<div class="dock-in"><div class="wait"><span class="dots"><i></i><i></i><i></i></span>${esc(me.name)} is aan zet</div></div>`;
+  let a='';
+  if(t.phase==='roll') a=`<button class="btn" data-act="roll">Gooi ${left(t)} stenen</button>`;
+  else if(t.phase==='pick') a=`<div class="wait">Kies een waarde uit je worp</div>`;
+  else if(t.phase==='decide'){
+    const tg=target();
+    if(tg) a+=`<button class="btn go" data-act="stop">${tg.type==='steal'?`Pik ${tg.n} af`:`Pak ${tg.n}`}</button>`;
+    if(left(t)>0) a+=`<button class="btn${tg?' soft':''}" data-act="roll">Gooi verder (${left(t)})</button>`;
+  } else if(t.phase==='done'){
+    const nxt=S.players[(S.cur+1)%S.players.length];
+    const end=!S.center.some(c=>c.st==='open');
+    a=`<button class="btn" data-act="next">${end?'Bekijk de uitslag':`Verder naar ${esc(nxt.name)}`}</button>`;
+  }
+  return `<div class="dock-in">${a}</div>`;
+}
+
+function render(){
+  const app=document.getElementById('app'), dock=document.getElementById('dock');
+  const focusId=document.activeElement&&document.activeElement.id;
+  app.innerHTML=!S?setupHTML():S.over?overHTML():gameHTML();
+  dock.innerHTML=dockHTML();
+  if(focusId){const el=document.getElementById(focusId);if(el)el.focus()}
+}
+
+/* ---------- invoer ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b||b.disabled) return;
+  const a=b.dataset.act;
+  const humanTurn=S&&!S.over&&!P().ai;
+  switch(a){
+    case 'seat': seats[+b.dataset.i].type=b.dataset.type; ui.err=''; save(); render(); break;
+    case 'start': startGame(); break;
+    case 'roll': if(humanTurn) doRoll(); break;
+    case 'pick': if(humanTurn) doPick(+b.dataset.f); break;
+    case 'stop': if(humanTurn) doStop(); break;
+    case 'next': if(humanTurn) advance(); break;
+    case 'fast': pref.fast=!pref.fast; save(); render(); schedule(); break;
+    case 'sound': pref.sound=!soundOn(); save(); render(); if(soundOn()) playSetAside(2); break;
+    case 'ask-new': ui.confirm=true; render(); break;
+    case 'cancel-new': ui.confirm=false; render(); break;
+    case 'new': clearTimeout(aiTimer); ui.confirm=false; S=null; save(); render(); break;
+    case 'again': startGame(); break;
+  }
+});
+['touchend','pointerup','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
+document.addEventListener('input',e=>{
+  const i=e.target.dataset&&e.target.dataset.seat;
+  if(i!=null){
+    seats[+i].name=e.target.value; save();
+    const av=e.target.parentElement.querySelector('.avatar');
+    if(av) av.textContent=(e.target.value.trim().charAt(0)||'?').toUpperCase();
+  }
+});
+function hover(f){
+  const r=document.getElementById('rolled'); if(!r||!r.classList.contains('can')) return;
+  r.querySelectorAll('.die').forEach(d=>d.classList.toggle('hi',f!=null&&d.dataset.f===String(f)&&!d.disabled));
+}
+document.addEventListener('pointerover',e=>{const d=e.target.closest('#rolled .die');hover(d&&!d.disabled?d.dataset.f:null)});
+document.addEventListener('focusin',e=>{const d=e.target.closest('#rolled .die');hover(d?d.dataset.f:null)});
+
+/* ---------- opstart ---------- */
+function boot(d){
+  if(d&&d.S!==undefined){S=d.S;if(d.seats)seats=d.seats;if(d.pref)pref=d.pref;}
+  else{
+    const l=load();
+    if(l){ if(Array.isArray(l.seats)&&l.seats.length===6) seats=l.seats; if(l.pref) pref=l.pref; if(l.S&&!l.S.over) S=l.S; }
+  }
+  render(); schedule();
+}
+try{window.claude?.hot?.snapshot?.(()=>({S,seats,pref}))}catch(e){}
+if(window.claude?.hot?.ready) window.claude.hot.ready(boot); else boot(window.claude?.hot?.data ?? null);
+})();
+</script>
+
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+# Pierenworp
+
+Een dobbelspel voor twee tot zes spelers. Gooi acht stenen, leg telkens één waarde apart en verzamel tegels met zoveel mogelijk pieren. Speel tegen de computer of met vrienden op hetzelfde toestel.
+
+De app is een PWA: je zet hem op het beginscherm van je telefoon, en na het eerste bezoek werkt hij ook offline.
+
+## Inhoud
+
+| Bestand | Functie |
+| --- | --- |
+| `index.html` | Het spel |
+| `manifest.webmanifest` | Naam, kleuren en iconen voor het beginscherm |
+| `sw.js` | Service worker, voor offline spelen |
+| `icon-*.png`, `apple-touch-icon.png` | App-iconen |
+
+## Online zetten
+
+Een PWA werkt alleen via https. Gratis hosten kan in twee minuten:
+
+1. Pak de zip uit.
+2. Ga naar [app.netlify.com/drop](https://app.netlify.com/drop) en sleep de uitgepakte map erop.
+3. Je krijgt een https-adres waarop het spel draait.
+
+GitHub Pages, Cloudflare Pages of je eigen webhosting werken ook.
+
+## Op je telefoon zetten
+
+- **iPhone (Safari):** open het adres, tik op de deelknop en kies *Zet op beginscherm*.
+- **Android (Chrome):** open het adres, open het menu (drie puntjes) en kies *App installeren*.
+
+## Lokaal testen
+
+Dubbelklikken op `index.html` werkt, maar dan doet de offlinefunctie niet mee. Start daarom in de map een kleine webserver:
+
+```sh
+python3 -m http.server 8000
+```
+
+Open daarna http://localhost:8000 in je browser.
+
+## Een nieuwe versie uitrollen
+
+Verhoog in `sw.js` het versienummer, bijvoorbeeld van `pierenworp-v5` naar `pierenworp-v6`. Geïnstalleerde apps halen dan bij de volgende start de nieuwe bestanden op.
