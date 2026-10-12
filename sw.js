@@ -1,5 +1,6 @@
 // Pierenworp service worker. Verhoog CACHE bij elke nieuwe versie.
-const CACHE='pierenworp-v18';
+const CACHE='pierenworp-v19';
+const EXT='pierenworp-extern';   // lettertypen en Firebase-software: blijven bewaard bij een nieuwe versie
 const ASSETS=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','favicon.ico','favicon-32.png'];
 
 // Nieuwe versie downloaden, maar wachten tot de speler op 'Vernieuwen' tikt.
@@ -8,7 +9,7 @@ self.addEventListener('install',e=>{
 });
 self.addEventListener('message',e=>{ if(e.data&&e.data.type==='SKIP_WAITING') self.skipWaiting(); });
 self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&k!==EXT).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
 });
 
 self.addEventListener('fetch',e=>{
@@ -18,7 +19,7 @@ self.addEventListener('fetch',e=>{
   const sdk=url.host==='www.gstatic.com'&&url.pathname.startsWith('/firebasejs/');
   if(font||sdk){
     // lettertypen en de Firebase-software: uit de cache, op de achtergrond bijwerken
-    e.respondWith(caches.open(CACHE).then(c=>c.match(req).then(hit=>{
+    e.respondWith(caches.open(EXT).then(c=>c.match(req).then(hit=>{
       const net=fetch(req).then(res=>{ if(res&&(res.ok||res.type==='opaque')) c.put(req,res.clone()); return res; }).catch(()=>hit);
       return hit||net;
     })));
