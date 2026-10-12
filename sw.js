@@ -1,5 +1,5 @@
 // Pierenworp service worker. Verhoog CACHE bij elke nieuwe versie.
-const CACHE='pierenworp-v16';
+const CACHE='pierenworp-v17';
 const ASSETS=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','favicon.ico','favicon-32.png'];
 
 // Nieuwe versie downloaden, maar wachten tot de speler op 'Vernieuwen' tikt.
@@ -15,8 +15,9 @@ self.addEventListener('fetch',e=>{
   const req=e.request; if(req.method!=='GET') return;
   const url=new URL(req.url);
   const font=url.host==='fonts.googleapis.com'||url.host==='fonts.gstatic.com';
-  if(font){
-    // lettertypen: uit de cache, op de achtergrond bijwerken
+  const sdk=url.host==='www.gstatic.com'&&url.pathname.startsWith('/firebasejs/');
+  if(font||sdk){
+    // lettertypen en de Firebase-software: uit de cache, op de achtergrond bijwerken
     e.respondWith(caches.open(CACHE).then(c=>c.match(req).then(hit=>{
       const net=fetch(req).then(res=>{ if(res&&(res.ok||res.type==='opaque')) c.put(req,res.clone()); return res; }).catch(()=>hit);
       return hit||net;
