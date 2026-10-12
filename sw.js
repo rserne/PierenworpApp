@@ -1,5 +1,5 @@
 // Pierenworp service worker. Verhoog CACHE bij elke nieuwe versie.
-const CACHE='pierenworp-v19';
+const CACHE='pierenworp-v20';
 const EXT='pierenworp-extern';   // lettertypen en Firebase-software: blijven bewaard bij een nieuwe versie
 const ASSETS=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','favicon.ico','favicon-32.png'];
 
