@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.ico?v=12" sizes="48x48">
-<link rel="icon" href="favicon-32.png?v=12" type="image/png" sizes="32x32">
-<link rel="icon" href="icon-192.png?v=12" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=12" sizes="180x180">
+<link rel="icon" href="favicon.ico?v=13" sizes="48x48">
+<link rel="icon" href="favicon-32.png?v=13" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png?v=13" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=13" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -217,7 +217,13 @@ details.rules p{margin:0 0 12px;color:var(--muted);max-width:62ch}
 .prow.win .place{color:var(--pink)}
 .prow .name{font-weight:700}
 .prow .meta{font-size:13px;color:var(--muted)}
-.prow .score{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.prow .who{min-width:0}
+.prow .score{display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+.prow .score b{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.prow .score span{font-size:12px;color:var(--muted);margin-top:3px}
+.prow .ptiles{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:5px;padding-top:4px}
+.prow .ptiles .mini{background:var(--surface-2)}
+.prow .no-tiles{font-size:13px;color:var(--muted)}
 .foot{font-size:13px;color:var(--muted);text-align:center;margin:0}
 
 /* updatemelding */
@@ -669,8 +675,8 @@ function gameHTML(){
     if(i===S.cur) cls.push('is-cur');
     if(tg&&tg.type==='steal'&&tg.from===i) cls.push('is-victim');
     if(i===S.cur&&t.phase==='done'&&t.result&&t.result.kind!=='bust') cls.push('got');
-    const w=score(p), k=p.stack.length;
-    return `<div class="${cls.join(' ')}">${avatar(p.name,p.c??i)}<div class="who"><div class="name">${esc(p.name)}</div><div class="meta" aria-label="${k} ${k===1?'tegel':'tegels'}, ${wl(w)}"><span class="stat" title="Tegels">${TILE_ICON}<b>${k}</b></span><span class="stat" title="Pieren">${WORM_STAT}<b>${w}</b></span></div></div>${miniHTML(top)}</div>`;
+    const k=p.stack.length;
+    return `<div class="${cls.join(' ')}">${avatar(p.name,p.c??i)}<div class="who"><div class="name">${esc(p.name)}</div><div class="meta"><span class="stat">${TILE_ICON}<b>${k}</b> ${k===1?'tegel':'tegels'}</span></div></div>${miniHTML(top)}</div>`;
   }).join('');
 
   const kf=new Set(t.kept), s=total(t), ready=hasWorm(t)&&s>=21;
@@ -708,7 +714,11 @@ function overHTML(){
   const win=ranked[0];
   const youWin=!win.p.ai&&humans()===1;
   const head=youWin?'Je hebt <em>gewonnen!</em>':`<em>${esc(win.p.name)}</em> wint!`;
-  const rows=ranked.map((r,i)=>`<div class="prow${i===0?' win':''}"><span class="place">${i+1}</span>${avatar(r.p.name,r.p.c??r.i)}<div><div class="name">${esc(r.p.name)}</div><div class="meta">${r.p.stack.length} ${r.p.stack.length===1?'tegel':'tegels'}${r.hi?` · hoogste ${r.hi}`:''}</div></div><span class="score">${r.w}</span></div>`).join('');
+  const rows=ranked.map((r,i)=>{
+    const k=r.p.stack.length;
+    const tiles=k?[...r.p.stack].sort((a,b)=>a-b).map(n=>miniHTML(n)).join(''):'<span class="no-tiles">Geen tegels</span>';
+    return `<div class="prow${i===0?' win':''}"><span class="place">${i+1}</span>${avatar(r.p.name,r.p.c??r.i)}<div class="who"><div class="name">${esc(r.p.name)}</div><div class="meta">${k} ${k===1?'tegel':'tegels'}</div></div><div class="score"><b>${r.w}</b><span>${r.w===1?'pier':'pieren'}</span></div><div class="ptiles" aria-label="Tegels van ${esc(r.p.name)}: ${k?r.p.stack.join(', '):'geen'}">${tiles}</div></div>`;
+  }).join('');
   return headerHTML(false)+`
   <section class="hero"><p class="label">Uitslag</p><h2>${head}</h2></section>
   <div class="podium">${rows}</div>`;
