@@ -14,6 +14,12 @@ De app is een PWA: je zet hem op het beginscherm van je telefoon, en na het eers
 | `icon-*.png`, `apple-touch-icon.png` | App-iconen |
 | `favicon.ico`, `favicon-32.png` | Icoontje in browsertabbladen en favorieten |
 
+## Online spelen
+
+Online spelen loopt via Firebase (project *pierenworp*): anoniem inloggen en een Realtime Database in europe-west1. Een spel staat onder `pierenworp/rooms/CODE` als `{ d, rev, t }`: `d` is de spelstand als JSON-tekst, `rev` een volgnummer dat bij elke zet ophoogt. De verbindingsgegevens staan bovenin het script van `index.html` (`FIREBASE_CONFIG`); die zijn niet geheim.
+
+Testen zonder Firebase kan met een nep-database: open het spel met `?mock` achter het adres in twee vensters van dezelfde browser.
+
 ## Online zetten
 
 Een PWA werkt alleen via https. Gratis hosten kan in twee minuten:
@@ -41,6 +47,6 @@ Open daarna http://localhost:8000 in je browser.
 
 ## Een nieuwe versie uitrollen
 
-Verhoog in `sw.js` het versienummer, bijvoorbeeld van `pierenworp-v14` naar `pierenworp-v15`, en zet de bestanden op GitHub.
+Verhoog in `sw.js` het versienummer, bijvoorbeeld van `pierenworp-v15` naar `pierenworp-v16`, en zet de bestanden op GitHub.
 
 Wie de app open heeft, krijgt dan bovenin de melding *Er is een nieuwe versie van Pierenworp*. Een tik op **Vernieuwen** laadt de nieuwe versie meteen; een lopend spel blijft bewaard. De app zoekt naar updates bij het openen en elk half uur.

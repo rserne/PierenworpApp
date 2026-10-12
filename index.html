@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.ico?v=14" sizes="48x48">
-<link rel="icon" href="favicon-32.png?v=14" type="image/png" sizes="32x32">
-<link rel="icon" href="icon-192.png?v=14" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=14" sizes="180x180">
+<link rel="icon" href="favicon.ico?v=15" sizes="48x48">
+<link rel="icon" href="favicon-32.png?v=15" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png?v=15" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=15" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -233,6 +233,37 @@ details.rules p{margin:0 0 12px;color:var(--muted);max-width:62ch}
 .update span{flex:1;min-width:0}
 .up-btn{flex:none;border:0;border-radius:11px;padding:10px 15px;font-weight:700;font-size:14.5px;background:var(--pink);color:var(--pink-ink)}
 @keyframes drop{from{transform:translate(-50%,-24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+/* online spelen */
+.modes{display:flex;width:100%}
+.modes button{flex:1;padding:11px 10px;font-size:15px}
+.online{display:flex;flex-direction:column;gap:16px}
+.fieldset{display:flex;flex-direction:column}
+.field{width:100%;min-width:0;background:var(--surface);box-shadow:var(--shadow);border:0;border-radius:14px;padding:13px 14px;font:inherit;font-weight:600;color:var(--ink)}
+.field::placeholder{color:var(--muted);font-weight:500}
+.field.code{text-transform:uppercase;letter-spacing:.35em;font-family:var(--f-display);font-size:20px;text-align:center;padding:10px 14px}
+.join-row{display:flex;gap:8px;align-items:stretch}
+.join-row .field{flex:1}
+.btn.small{flex:0 0 auto;min-height:44px;padding:0 16px;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.small svg{width:18px;height:18px}
+.btn:disabled{opacity:.45;cursor:default;box-shadow:none}
+.notice{margin:0;background:var(--surface);box-shadow:var(--shadow);border-radius:14px;padding:12px 14px;color:var(--muted);font-size:15px}
+.notice.resume{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--ink)}
+.notice.resume span{flex:1 1 180px}
+.codebox{background:var(--surface);box-shadow:var(--shadow);border-radius:22px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.code-letters{display:flex;gap:8px}
+.code-letters span{width:54px;height:66px;border-radius:13px;background:var(--surface-2);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:30px;letter-spacing:-.02em}
+.lobby-seat{display:flex;align-items:center;gap:10px;background:var(--surface);box-shadow:var(--shadow);border-radius:var(--r);padding:10px 12px;min-height:58px}
+.lobby-seat .nm{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.tag.me{background:var(--pink-soft);color:var(--pink)}
+.lobby-seat .x{margin-left:auto;width:36px;height:36px;border:0;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;color:var(--muted)}
+.lobby-seat .x svg{width:18px;height:18px}
+.addai{display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;border:1.5px dashed var(--line);border-radius:var(--r);background:transparent;font-weight:700;color:var(--muted)}
+.addai svg{width:18px;height:18px}
+.you{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pink);vertical-align:1px}
+.banner{flex:1 1 100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);box-shadow:var(--shadow);border-radius:14px;padding:8px 8px 8px 14px;font-size:14.5px}
+.banner span{flex:1 1 160px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 104px);transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);font-weight:600;font-size:14.5px;padding:10px 16px;border-radius:12px;box-shadow:var(--shadow-lift);max-width:calc(100% - 32px)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
@@ -242,6 +273,7 @@ details.rules p{margin:0 0 12px;color:var(--muted);max-width:62ch}
 <div class="wrap" id="app"></div>
 <div class="dock" id="dock"></div>
 <div class="update" id="update" role="status" aria-live="polite" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script>
 (function(){
@@ -260,7 +292,7 @@ let seats=[
 ];
 let pref={fast:false,sound:true};
 const soundOn=()=>pref.sound!==false;
-const ui={confirm:false,fresh:false,err:'',update:null,aiChoice:null,newKept:0};
+const ui={confirm:false,fresh:false,err:'',update:null,newKept:0,mode:'local',netBusy:'',netErr:'',netMsg:'',joinCode:''};
 
 /* ---------- melding bij een nieuwe versie (aangeroepen door de app-schil) ---------- */
 function renderUpdate(busy){
@@ -270,7 +302,11 @@ function renderUpdate(busy){
   el.innerHTML=busy?'<span>Nieuwe versie laden…</span>':'<span>Er is een nieuwe versie van Pierenworp.</span><button class="up-btn" data-act="update">Vernieuwen</button>';
 }
 window.__pwShowUpdate=fn=>{ ui.update=fn; renderUpdate(); };
-let aiTimer=null;
+let aiTimer=null, stallTimer=null;
+let ON=null;       // online sessie: {code, uid, ver, isHost, ...}
+let R=null;        // online kamer: {status, host, seats, S}
+let stashS=null;   // het spel op deze telefoon, bewaard zolang je online speelt
+const AI_STALL=9000, HUMAN_STALL=90000;
 
 /* ---------- geluid: dobbelstenen, live opgewekt met Web Audio ---------- */
 let actx=null, master=null, noiseBuf=null;
@@ -353,7 +389,7 @@ function playSetAside(n){
 }
 
 /* ---------- opslag ---------- */
-function save(){try{localStorage.setItem(KEY,JSON.stringify({S,seats,pref}))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({S:ON?stashS:S,seats,pref}))}catch(e){}}
 function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
 
 /* ---------- spellogica ---------- */
@@ -378,14 +414,9 @@ function target(){
   return best?{type:'center',n:best}:null;
 }
 function freshTurn(){return {rolled:[],kept:[],phase:'roll'}}
-function turnIntro(){
-  const p=P();
-  if(p.ai) return `<b>${esc(p.name)}</b> is aan de beurt.`;
-  return humans()>1?`<b>${esc(p.name)}</b>, jouw beurt. Gooi de stenen.`:'Jouw beurt. Gooi de stenen.';
-}
+const isMine=()=>{ if(!S||S.over) return false; const p=P(); if(p.ai) return false; return !ON||p.uid===ON.uid; };
 function decideMsg(tg){
-  const t=T(), p=P(), s=total(t);
-  if(p.ai) return `<b>${esc(p.name)}</b> heeft ${s}${hasWorm(t)?' met pier':''}…`;
+  const t=T(), s=total(t);
   if(tg){
     const what=tg.type==='steal'?`tegel ${tg.n} van ${esc(S.players[tg.from].name)} afpikken`:`tegel ${tg.n} pakken`;
     return left(t)?`Je kunt ${what}, of verder gooien met ${left(t)} ${left(t)===1?'steen':'stenen'}.`:`Je kunt ${what}.`;
@@ -394,17 +425,34 @@ function decideMsg(tg){
   if(s<21) return `Nog ${21-s} te gaan tot 21. Gooi verder.`;
   return 'Geen tegel binnen bereik. Gooi verder.';
 }
+/* De tekst onderin wordt per telefoon bepaald: wie aan de beurt is, krijgt 'jij'-teksten, de rest ziet de naam. */
+function statusMsg(){
+  const t=T(), p=P(), name=`<b>${esc(p.name)}</b>`, mine=isMine(), s=total(t);
+  if(t.phase==='roll'){
+    if(!mine) return `${name} is aan de beurt.`;
+    return (!ON&&humans()>1)?`${name}, jouw beurt. Gooi de stenen.`:'Jouw beurt. Gooi de stenen.';
+  }
+  if(t.phase==='pick'){
+    if(t.choice!=null){ const c=t.rolled.filter(x=>x===t.choice).length; return `${name} kiest ${c} × <span class="inline-die" aria-label="${faceName(t.choice)}">${dieSVG(t.choice)}</span>`; }
+    if(mine) return 'Tik een steen aan om alle stenen met die waarde apart te leggen.';
+    return `${name} gooit ${t.rolled.length} ${t.rolled.length===1?'steen':'stenen'}.`;
+  }
+  if(t.phase==='decide'){
+    if(mine) return decideMsg(target());
+    return `${name} heeft ${s}${hasWorm(t)?' met pier':''}…`;
+  }
+  return '';
+}
 
+function newState(players){
+  return {players:players.map(p=>({...p,stack:[]})),center:Array.from({length:16},(_,i)=>({n:21+i,st:'open'})),
+    cur:0,turn:freshTurn(),over:false,seq:0,ev:{k:'start'}};
+}
 function startGame(){
   const act=seats.map((s,i)=>({...s,seat:i})).filter(s=>s.type!=='uit');
   if(act.length<2){ui.err='Kies minstens twee spelers.';render();return}
-  ui.err=''; ui.aiChoice=null;
-  S={
-    players:act.map((s,i)=>({name:(s.name||'').trim()||(s.type==='computer'?AI_NAMES[i%AI_NAMES.length]:'Speler '+(i+1)),ai:s.type==='computer',stack:[],c:s.seat})),
-    center:Array.from({length:16},(_,i)=>({n:21+i,st:'open'})),
-    cur:0,turn:freshTurn(),msg:'',over:false
-  };
-  S.msg=turnIntro();
+  ui.err='';
+  S=newState(act.map((s,i)=>({name:(s.name||'').trim()||(s.type==='computer'?AI_NAMES[i%AI_NAMES.length]:'Speler '+(i+1)),ai:s.type==='computer',c:s.seat})));
   commit();
 }
 
@@ -412,10 +460,10 @@ function doRoll(){
   const t=T();
   if(!(t.phase==='roll'||(t.phase==='decide'&&left(t)>0))) return;
   t.rolled=Array.from({length:left(t)},()=>1+Math.floor(Math.random()*6));
-  ui.fresh=true;
-  playRoll(t.rolled.length);
-  if(!canPickAny(t)){ bust('Geen enkele nieuwe waarde gegooid.'); }
-  else { t.phase='pick'; S.msg=P().ai?`<b>${esc(P().name)}</b> gooit ${t.rolled.length} ${t.rolled.length===1?'steen':'stenen'}.`:'Tik een steen aan om alle stenen met die waarde apart te leggen.'; }
+  t.choice=null;
+  S.ev={k:'roll',n:t.rolled.length};
+  if(!canPickAny(t)) bust('Geen enkele nieuwe waarde gegooid.');
+  else t.phase='pick';
   commit();
 }
 function doPick(f){
@@ -423,12 +471,11 @@ function doPick(f){
   if(t.phase!=='pick'||t.kept.includes(f)||!t.rolled.includes(f)) return;
   const picked=t.rolled.filter(x=>x===f);
   t.kept.push(...picked);
-  ui.newKept=picked.length; ui.aiChoice=null;
-  playSetAside(picked.length);
-  t.rolled=[]; ui.fresh=false;
+  t.rolled=[]; t.choice=null;
+  S.ev={k:'pick',n:picked.length};
   const tg=target();
   if(left(t)===0&&!tg) bust('Alle stenen liggen apart, maar er valt niets te pakken.');
-  else { t.phase='decide'; S.msg=decideMsg(tg); }
+  else t.phase='decide';
   commit();
 }
 function doStop(){
@@ -437,14 +484,13 @@ function doStop(){
   const me=P();
   if(tg.type==='steal'){
     const v=S.players[tg.from]; v.stack.pop(); me.stack.push(tg.n);
-    S.msg=`<b>${esc(me.name)}</b> pikt tegel ${tg.n} af van ${esc(v.name)}.`;
     t.result={kind:'steal',n:tg.n,from:v.name};
   }else{
     S.center.find(c=>c.n===tg.n).st='taken'; me.stack.push(tg.n);
-    S.msg=`<b>${esc(me.name)}</b> pakt tegel ${tg.n}: ${wl(wormsOf(tg.n))}.`;
     t.result={kind:'take',n:tg.n};
   }
-  t.phase='done'; t.rolled=[]; ui.fresh=false;
+  t.phase='done'; t.rolled=[];
+  S.ev={k:'stop'};
   commit();
 }
 function bust(reason){
@@ -456,22 +502,28 @@ function bust(reason){
   const hi=open[open.length-1];
   let flipped=null;
   if(hi&&hi.n!==back){ hi.st='flipped'; flipped=hi.n; }
-  let m=`Mislukt! ${reason}`;
-  if(back) m+=` ${esc(me.name)} levert tegel ${back} in.`;
-  if(flipped) m+=` Tegel ${flipped} gaat dicht.`;
-  S.msg=m;
   t.result={kind:'bust',reason,back,flipped};
 }
 function advance(){
   if(T().phase!=='done') return;
-  ui.fresh=false;
-  if(!S.center.some(c=>c.st==='open')){ S.over=true; commit(); return; }
-  S.cur=(S.cur+1)%S.players.length;
-  ui.aiChoice=null;
-  S.turn=freshTurn(); S.msg=turnIntro();
+  if(!S.center.some(c=>c.st==='open')) S.over=true;
+  else { S.cur=(S.cur+1)%S.players.length; S.turn=freshTurn(); }
+  S.ev={k:'next'};
   commit();
 }
-function commit(){save();render();schedule()}
+/* Animaties en geluid bij een nieuwe zet: van jezelf, of binnengekomen van een andere telefoon */
+function fx(ev){
+  ui.fresh=false; ui.newKept=0;
+  if(!ev) return;
+  if(ev.k==='roll'){ ui.fresh=true; playRoll(ev.n); }
+  else if(ev.k==='pick'){ ui.newKept=ev.n; playSetAside(ev.n); }
+}
+function commit(){
+  S.seq=(S.seq||0)+1;
+  fx(S.ev);
+  if(ON){ R.S=S; push(); } else save();
+  render(); schedule();
+}
 
 /* ---------- computerspeler ---------- */
 /* De computer rekent per beurt uit wat elke keuze gemiddeld oplevert:
@@ -545,13 +597,18 @@ function aiShouldStop(t){
   return pl.stopV[sum]>=pl.R(maskOf(t),sum,n);
 }
 function schedule(){
-  clearTimeout(aiTimer);
+  clearTimeout(aiTimer); clearTimeout(stallTimer);
   if(!S||S.over) return;
   const t=T(), sp=pref.fast?0.45:1;
   if(P().ai){
     // pick: eerst de worp laten zien, daarna de gekozen stenen laten oplichten
-    const d=t.phase==='pick'?(ui.aiChoice==null?1500:1300):({roll:800,decide:1300,done:2800}[t.phase]||900);
-    aiTimer=setTimeout(aiStep,d*sp);
+    const d=t.phase==='pick'?(t.choice==null?1500:1300):({roll:800,decide:1300,done:2800}[t.phase]||900);
+    if(!ON||ON.isHost) aiTimer=setTimeout(aiStep,d*sp);
+    // online speelt de starter voor de computer; valt die weg, dan neemt een andere telefoon het over
+    else aiTimer=setTimeout(()=>{ if(ON&&Date.now()-ON.changed>=AI_STALL) aiStep(); else schedule(); },AI_STALL);
+  } else if(ON&&!isMine()){
+    const wait=HUMAN_STALL-(Date.now()-ON.changed);
+    if(wait>0) stallTimer=setTimeout(()=>{render();schedule();},wait+200);
   }
 }
 function aiStep(){
@@ -559,12 +616,8 @@ function aiStep(){
   const t=T();
   if(t.phase==='roll') doRoll();
   else if(t.phase==='pick'){
-    if(ui.aiChoice==null){
-      const f=aiPick(t), c=t.rolled.filter(x=>x===f).length;
-      ui.aiChoice=f; ui.fresh=false;
-      S.msg=`<b>${esc(P().name)}</b> kiest ${c} × <span class="inline-die" aria-label="${faceName(f)}">${dieSVG(f)}</span>`;
-      render(); schedule();
-    } else doPick(ui.aiChoice);
+    if(t.choice==null){ t.choice=aiPick(t); S.ev={k:'choice'}; commit(); }
+    else doPick(t.choice);
   }
   else if(t.phase==='decide'){ if(aiShouldStop(t)) doStop(); else doRoll(); }
   else if(t.phase==='done') advance();
@@ -596,6 +649,10 @@ const ICON={
   soundOn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>',
   soundOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
   fast:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg>',
+  leave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h10"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>',
   restart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/></svg>'
 };
 const avatar=(name,c)=>`<span class="avatar" style="--c:var(--p${(c%6)+1})" aria-hidden="true">${esc((name||'?').trim().charAt(0).toUpperCase()||'?')}</span>`;
@@ -642,34 +699,358 @@ function resultHTML(r,p){
   return `<div class="result bust" role="alert"><span class="bust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg></span><div class="r-text"><p class="r-title">Mislukt!</p><p class="r-sub">${sub}</p></div></div>`;
 }
 
-function headerHTML(inGame){
+/* ---------- online spelen ---------- */
+/* De stand van een online spel staat in Firebase onder pierenworp/rooms/CODE als { d: JSON-tekst, rev: volgnummer, t: tijd }.
+   Wie een zet doet, schrijft de nieuwe stand weg met een transactie die controleert of niemand anders er tussendoor kwam. */
+const FIREBASE_CONFIG={
+  apiKey:'AIzaSyC_ZlhmqLBPzc_czjbswY05M0NcgY_DU7E',
+  authDomain:'pierenworp.firebaseapp.com',
+  databaseURL:'https://pierenworp-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId:'pierenworp',
+  storageBucket:'pierenworp.firebasestorage.app',
+  messagingSenderId:'403988790368',
+  appId:'1:403988790368:web:c544c031318d19e7f2d705'
+};
+const FB_SDK='https://www.gstatic.com/firebasejs/10.12.2/';
+const ROOMS='pierenworp/rooms/';
+const CODE_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ';
+let netP=null;
+const useMock=()=>/[?&]mock\b/.test(location.search);
+const netReady=()=>useMock()||!!FIREBASE_CONFIG;
+function getNet(){
+  if(netP) return netP;
+  if(useMock()) return netP=Promise.resolve(mockNet());
+  if(!FIREBASE_CONFIG) return Promise.reject(new Error('config'));
+  netP=(async()=>{
+    const [A,U,D]=await Promise.all([import(FB_SDK+'firebase-app.js'),import(FB_SDK+'firebase-auth.js'),import(FB_SDK+'firebase-database.js')]);
+    const app=A.initializeApp(FIREBASE_CONFIG);
+    const auth=U.getAuth(app);
+    await new Promise(res=>{ const off=U.onAuthStateChanged(auth,()=>{ off(); res(); }); });
+    if(!auth.currentUser) await U.signInAnonymously(auth);
+    const db=D.getDatabase(app);
+    return {
+      uid:auth.currentUser.uid,
+      sub(code,cb,err){ return D.onValue(D.ref(db,ROOMS+code),s=>cb(s.val()),e=>err&&err(e)); },
+      async tx(code,fn){ const r=await D.runTransaction(D.ref(db,ROOMS+code),fn,{applyLocally:false}); return {committed:r.committed,val:r.snapshot.val()}; }
+    };
+  })();
+  netP.catch(()=>{ netP=null; });
+  return netP;
+}
+/* Nep-database om online spelen te testen in twee vensters van dezelfde browser (adres met ?mock) */
+function mockNet(){
+  let uid=sessionStorage.getItem('pw-mock-uid');
+  if(!uid){ uid='u'+Math.random().toString(36).slice(2,8); sessionStorage.setItem('pw-mock-uid',uid); }
+  const bc=new BroadcastChannel('pw-mock'), subs=new Map();
+  const rd=c=>{ try{ return JSON.parse(localStorage.getItem('pw-mock:'+c)); }catch(e){ return null; } };
+  const fire=c=>(subs.get(c)||[]).forEach(f=>f(rd(c)));
+  bc.onmessage=e=>fire(e.data);
+  return {
+    uid,
+    sub(code,cb){ subs.set(code,[...(subs.get(code)||[]),cb]); setTimeout(()=>cb(rd(code)),20); return ()=>subs.set(code,(subs.get(code)||[]).filter(f=>f!==cb)); },
+    async tx(code,fn){
+      await new Promise(r=>setTimeout(r,40));
+      const cur=rd(code), nv=fn(cur);
+      if(nv===undefined) return {committed:false,val:cur};
+      if(nv===null) localStorage.removeItem('pw-mock:'+code); else localStorage.setItem('pw-mock:'+code,JSON.stringify(nv));
+      bc.postMessage(code); setTimeout(()=>fire(code),30);
+      return {committed:true,val:nv};
+    }
+  };
+}
+const newCode=()=>Array.from({length:4},()=>CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('');
+const wrap=(d,rev)=>({d:typeof d==='string'?d:JSON.stringify(d),rev,t:Date.now()});
+function parseRoom(v){ try{ const d=JSON.parse(v.d); return {status:d.status,host:d.host,seats:d.seats||[],S:d.S||null}; }catch(e){ return null; } }
+
+let busy=0, latest, queue=Promise.resolve();
+function run(job){
+  busy++;
+  const p=queue.then(job).catch(e=>{ if(ON) ON.dirty=true; console.warn(e); })
+    .finally(()=>{ busy--; if(!busy) applyLatest(); });
+  queue=p.catch(()=>{});
+  return p;
+}
+/* een zet wegschrijven: alleen als de stand op de server nog dezelfde is als waar deze zet op voortbouwt */
+function push(){
+  if(!ON) return;
+  const data=JSON.stringify({status:R.status,host:R.host,seats:R.seats,S:R.S}), code=ON.code;
+  run(async()=>{
+    const net=await getNet();
+    if(!ON||ON.code!==code||ON.ver==null) return;
+    const base=ON.ver;
+    const r=await net.tx(code,cur=>{ if(cur===null) return null; if(cur.rev!==base) return; return wrap(data,base+1); });
+    if(!ON) return;
+    if(r.committed&&r.val){ ON.ver=r.val.rev; ON.changed=Date.now(); } else ON.dirty=true;
+  });
+}
+/* wachtkamer, verlaten en overnemen: een wijziging op de actuele stand van de server */
+function mutateRoom(fn){
+  if(!ON) return Promise.resolve();
+  const code=ON.code, uid=ON.uid;
+  return run(async()=>{
+    const net=await getNet();
+    return net.tx(code,cur=>{
+      if(cur===null) return null;
+      const d=parseRoom(cur); if(!d) return;
+      const nd=fn(d,uid);
+      if(nd===undefined) return;
+      return nd===null?null:wrap(nd,(cur.rev||0)+1);
+    });
+  });
+}
+function onRoom(v){ latest=v; if(!busy) applyLatest(); }
+function applyLatest(){
+  if(!ON||latest===undefined) return;
+  const v=latest;
+  if(v===null){ endOnline('Dit online spel bestaat niet meer.'); return; }
+  if(ON.applied&&!ON.dirty&&v.rev<=ON.ver) return;
+  const d=parseRoom(v); if(!d) return;
+  const prevSeq=S?(S.seq||0):0;
+  ON.ver=v.rev; ON.applied=true; ON.dirty=false; ON.changed=Date.now();
+  R=d; ON.isHost=R.host===ON.uid;
+  if(R.status==='lobby'){
+    S=null;
+    if(!R.seats.some(s=>s.id===ON.uid)){ endOnline('Je doet niet meer mee aan dit spel.'); return; }
+  } else {
+    S=R.S;
+    if(S&&(S.seq||0)>prevSeq) fx(S.ev); else ui.fresh=false;
+  }
+  render(); schedule();
+}
+function netError(e){
+  const m=String(e&&(e.code||e.message)||'');
+  ui.netBusy='';
+  ui.netErr=m==='config'?'Online spelen is nog niet ingesteld.'
+    :/permission/i.test(m)?'De online database weigert de toegang. Controleer de regels in Firebase.'
+    :'Er ging iets mis met de verbinding. Controleer je internet en probeer het opnieuw.';
+  render();
+}
+function enterOnline(code){
+  if(!ON) stashS=S;
+  clearTimeout(aiTimer); clearTimeout(stallTimer);
+  S=null; R=null; latest=undefined;
+  ui.confirm=false; ui.netErr=''; ui.netMsg=''; ui.netBusy='Verbinden…'; ui.mode='online';
+  ON={code,uid:null,ver:null,applied:false,dirty:false,isHost:false,changed:Date.now(),unsub:null};
+  pref.online={code}; pref.mode='online'; save();
+  render();
+  const me=ON;
+  getNet().then(net=>{
+    if(ON!==me) return;
+    me.uid=net.uid;
+    me.unsub=net.sub(code,onRoom,()=>{ if(ON===me) endOnline('De verbinding met het online spel is verbroken.',true); });
+    ui.netBusy='';
+  }).catch(e=>{ if(ON===me){ endOnline('',true); netError(e); } });
+}
+function endOnline(msg,keep){
+  if(ON&&ON.unsub) try{ ON.unsub(); }catch(e){}
+  clearTimeout(aiTimer); clearTimeout(stallTimer);
+  ON=null; R=null; latest=undefined;
+  S=stashS; stashS=null;
+  if(!keep) pref.online=null;
+  ui.confirm=false; ui.netBusy=''; ui.netMsg=msg||''; ui.mode='online';
+  save(); render(); schedule();
+}
+function nameOk(){
+  const name=(pref.name||'').trim();
+  if(!name){ ui.netErr='Vul eerst je naam in.'; render(); return null; }
+  return name.slice(0,14);
+}
+async function createOnline(){
+  const name=nameOk(); if(!name) return;
+  ui.netBusy='Spel aanmaken…'; ui.netErr=''; ui.netMsg=''; render();
+  try{
+    const net=await getNet();
+    for(let i=0;i<8;i++){
+      const code=newCode();
+      const room={status:'lobby',host:net.uid,seats:[{id:net.uid,name}],S:null};
+      const r=await net.tx(code,cur=>cur===null?wrap(room,1):undefined);
+      if(r.committed){ enterOnline(code); return; }
+    }
+    throw new Error('code');
+  }catch(e){ netError(e); }
+}
+async function joinOnline(){
+  const code=(ui.joinCode||'').toUpperCase().replace(/[^A-Z]/g,'');
+  if(code.length!==4){ ui.netErr='Een code bestaat uit vier letters.'; render(); return; }
+  const name=nameOk(); if(!name) return;
+  ui.netBusy='Meedoen…'; ui.netErr=''; ui.netMsg=''; render();
+  try{
+    const net=await getNet(); let why='';
+    const r=await net.tx(code,cur=>{
+      why='';
+      if(cur===null) return null;
+      const d=parseRoom(cur); if(!d){ why='kapot'; return; }
+      if(d.seats.some(s=>s.id===net.uid)){
+        if(d.status!=='lobby') return;                    // je zat al aan tafel: gewoon weer aansluiten
+        d.seats=d.seats.map(s=>s.id===net.uid?{...s,name}:s); return wrap(d,cur.rev+1);
+      }
+      if(d.status!=='lobby'){ why='begonnen'; return; }
+      if(d.seats.length>=6){ why='vol'; return; }
+      d.seats.push({id:net.uid,name}); return wrap(d,cur.rev+1);
+    });
+    ui.netBusy='';
+    if(r.val===null||why==='kapot'){ ui.netErr=`Er is geen spel met de code ${code}.`; render(); return; }
+    if(why==='begonnen'){ ui.netErr='Dit spel is al begonnen. Vraag de starter om een nieuw potje.'; render(); return; }
+    if(why==='vol'){ ui.netErr='Dit spel zit al vol: er doen zes spelers mee.'; render(); return; }
+    ui.joinCode='';
+    enterOnline(code);
+  }catch(e){ netError(e); }
+}
+async function leaveOnline(){
+  if(!ON) return;
+  if(ON.uid){
+    try{
+      await mutateRoom((d,uid)=>{
+        const others=d.seats.filter(s=>!s.ai&&s.id!==uid);
+        if(d.status==='lobby') d.seats=d.seats.filter(s=>s.id!==uid);
+        else{
+          d.seats=d.seats.map(s=>s.id===uid?{...s,ai:true}:s);
+          if(d.S&&!d.S.over) d.S.players.forEach(p=>{ if(p.uid===uid) p.ai=true; });
+        }
+        if(!others.length) return null;                  // laatste mens weg: kamer opruimen
+        if(d.host===uid) d.host=others[0].id;
+        return d;
+      });
+    }catch(e){}
+  }
+  endOnline('');
+}
+function addComputer(){
+  mutateRoom(d=>{
+    if(d.status!=='lobby'||d.seats.length>=6) return;
+    const used=new Set(d.seats.map(s=>s.name));
+    d.seats.push({id:'ai-'+Math.random().toString(36).slice(2,8),name:AI_NAMES.find(n=>!used.has(n))||'Robot',ai:true});
+    return d;
+  });
+}
+function removeSeat(id){ mutateRoom(d=>{ if(d.status!=='lobby') return; d.seats=d.seats.filter(s=>s.id!==id||!s.ai); return d; }); }
+function startOnline(){
+  mutateRoom((d,uid)=>{
+    if(d.status!=='lobby'||d.host!==uid||d.seats.length<2) return;
+    d.status='play';
+    d.S=newState(d.seats.map((s,i)=>({name:s.name,ai:!!s.ai,uid:s.id,c:i}))); d.S.seq=1;
+    return d;
+  });
+}
+function againOnline(){
+  mutateRoom((d,uid)=>{
+    if(!d.S||!d.S.over||d.host!==uid) return;
+    d.S=newState(d.S.players.map(p=>({name:p.name,ai:p.ai,uid:p.uid,c:p.c}))); d.S.seq=1;
+    return d;
+  });
+}
+function takeOver(i){
+  mutateRoom(d=>{
+    const p=d.S&&d.S.players[i]; if(!p||p.ai) return;
+    p.ai=true;
+    d.seats=d.seats.map(s=>s.id===p.uid?{...s,ai:true}:s);
+    if(d.host===p.uid){ const h=d.seats.find(s=>!s.ai); if(h) d.host=h.id; }
+    return d;
+  });
+}
+function reclaim(){
+  mutateRoom((d,uid)=>{
+    const p=d.S&&d.S.players.find(q=>q.uid===uid); if(!p||!p.ai) return;
+    p.ai=false; d.seats=d.seats.map(s=>s.id===uid?{...s,ai:false}:s);
+    return d;
+  });
+}
+async function shareInvite(){
+  if(!ON) return;
+  const url=location.origin+location.pathname+'#'+ON.code;
+  const text=`Doe mee met mijn potje Pierenworp! De code is ${ON.code}.`;
+  if(navigator.share){ try{ await navigator.share({title:'Pierenworp',text,url}); return; }catch(e){ if(e&&e.name==='AbortError') return; } }
+  try{ await navigator.clipboard.writeText(text+' '+url); toast('Uitnodiging gekopieerd'); }
+  catch(e){ toast(`Geef je medespelers de code ${ON.code}`); }
+}
+let toastTimer=null;
+function toast(m){
+  const el=document.getElementById('toast'); if(!el) return;
+  el.textContent=m; el.hidden=false; clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{ el.hidden=true; },2600);
+}
+
+/* ---------- schermen ---------- */
+function headerHTML(kind){
   const snd=soundOn();
+  let extra='';
+  if(kind==='game'&&(!ON||ON.isHost)) extra+=`<button class="ib" data-act="fast" aria-pressed="${!!pref.fast}" aria-label="Vlot tempo voor computerspelers" title="Vlot tempo">${ICON.fast}</button>`;
+  if(ON) extra+=`<button class="ib" data-act="ask-leave" aria-label="Online spel verlaten" title="Verlaten">${ICON.leave}</button>`;
+  else if(kind==='game') extra+=`<button class="ib" data-act="ask-new" aria-label="Nieuw spel" title="Nieuw spel">${ICON.restart}</button>`;
   return `<header class="top">${logoHTML()}<div class="icons">
     <button class="ib" data-act="sound" aria-pressed="false" aria-label="${snd?'Geluid uitzetten':'Geluid aanzetten'}" title="${snd?'Geluid staat aan':'Geluid staat uit'}">${snd?ICON.soundOn:ICON.soundOff}</button>
-    ${inGame?`<button class="ib" data-act="fast" aria-pressed="${!!pref.fast}" aria-label="Vlot tempo voor computerspelers" title="Vlot tempo">${ICON.fast}</button>
-    <button class="ib" data-act="ask-new" aria-label="Nieuw spel" title="Nieuw spel">${ICON.restart}</button>`:''}
+    ${extra}
   </div></header>`;
 }
 
 function setupHTML(){
-  const rows=seats.map((s,i)=>`<div class="seat${s.type==='uit'?' off':''}">
-    ${avatar(s.name,i)}
-    <input id="seat-name-${i}" data-seat="${i}" value="${esc(s.name)}" maxlength="14" aria-label="Naam speler ${i+1}" autocomplete="off">
-    <div class="seg" role="group" aria-label="Soort speler ${i+1}">
-      ${['mens','computer','uit'].map(tp=>`<button data-act="seat" data-i="${i}" data-type="${tp}" aria-pressed="${s.type===tp}">${tp==='mens'?'Mens':tp==='computer'?'Computer':'Uit'}</button>`).join('')}
-    </div></div>`).join('');
-  return headerHTML(false)+`
+  const online=ui.mode==='online';
+  const tabs=`<div class="seg modes" role="group" aria-label="Manier van spelen">
+    <button data-act="mode" data-m="local" aria-pressed="${!online}">Op deze telefoon</button>
+    <button data-act="mode" data-m="online" aria-pressed="${online}">Online</button></div>`;
+  let body;
+  if(!online){
+    const rows=seats.map((s,i)=>`<div class="seat${s.type==='uit'?' off':''}">
+      ${avatar(s.name,i)}
+      <input id="seat-name-${i}" data-seat="${i}" value="${esc(s.name)}" maxlength="14" aria-label="Naam speler ${i+1}" autocomplete="off">
+      <div class="seg" role="group" aria-label="Soort speler ${i+1}">
+        ${['mens','computer','uit'].map(tp=>`<button data-act="seat" data-i="${i}" data-type="${tp}" aria-pressed="${s.type===tp}">${tp==='mens'?'Mens':tp==='computer'?'Computer':'Uit'}</button>`).join('')}
+      </div></div>`).join('');
+    body=`<section><p class="label">Spelers</p><div class="seats">${rows}</div></section>
+    ${ui.err?`<p class="err" role="alert">${ui.err}</p>`:''}
+    ${rulesHTML()}
+    <p class="foot">Mensen spelen om de beurt op hetzelfde toestel.</p>`;
+  } else {
+    const off=!netReady();
+    const resume=pref.online&&pref.online.code;
+    body=`<section class="online">
+      <p class="lede">Iedereen speelt op zijn eigen telefoon. Start een spel en deel de code, of doe mee met de code van een ander.</p>
+      ${off?`<p class="notice">Online spelen wordt nog ingesteld. Zodra dat klaar is, kun je hier een spel starten.</p>`:''}
+      ${ui.netMsg?`<p class="notice">${esc(ui.netMsg)}</p>`:''}
+      ${resume?`<div class="notice resume"><span>Je speelde mee met spel <b>${esc(pref.online.code)}</b>.</span><button class="btn soft small" data-act="reconnect">Opnieuw verbinden</button></div>`:''}
+      <div class="fieldset"><label class="label" for="on-name">Jouw naam</label>
+        <input id="on-name" class="field" data-pref="name" value="${esc(pref.name||'')}" maxlength="14" placeholder="Bijvoorbeeld Rob" autocomplete="nickname"></div>
+      <div class="fieldset"><label class="label" for="on-code">Meedoen met een code</label>
+        <div class="join-row"><input id="on-code" class="field code" data-ui="joinCode" value="${esc(ui.joinCode||'')}" maxlength="4" placeholder="ABCD" autocapitalize="characters" autocomplete="off" spellcheck="false" inputmode="text">
+        <button class="btn soft small" data-act="join" ${off||ui.netBusy?'disabled':''}>Doe mee</button></div></div>
+      ${ui.netErr?`<p class="err" role="alert">${esc(ui.netErr)}</p>`:''}
+    </section>
+    ${rulesHTML()}`;
+  }
+  return headerHTML('setup')+`
   <section class="hero"><h2>Gooi, kies en <em>durf</em> door te gaan.</h2>
   <p class="lede">Gooi acht dobbelstenen, leg telkens één waarde apart en verzamel tegels met zoveel mogelijk pieren.</p></section>
-  <section><p class="label">Spelers</p><div class="seats">${rows}</div></section>
-  ${ui.err?`<p class="err" role="alert">${ui.err}</p>`:''}
-  ${rulesHTML()}
-  <p class="foot">Mensen spelen om de beurt op hetzelfde toestel.</p>`;
+  ${tabs}${body}`;
+}
+
+function connectingHTML(){
+  return headerHTML('lobby')+`<section class="hero"><p class="label">Online spel ${ON?esc(ON.code):''}</p><h2>Verbinden…</h2>
+  <p class="lede">Even geduld, we halen het spel op.</p></section>`;
+}
+
+function lobbyHTML(){
+  const host=R.seats.find(s=>s.id===R.host);
+  const rows=R.seats.map((s,i)=>{
+    const tags=[];
+    if(s.id===ON.uid) tags.push('<span class="tag me">jij</span>');
+    if(s.id===R.host) tags.push('<span class="tag">starter</span>');
+    if(s.ai) tags.push('<span class="tag">computer</span>');
+    const del=ON.isHost&&s.ai?`<button class="x" data-act="del-seat" data-id="${esc(s.id)}" aria-label="${esc(s.name)} verwijderen">${ICON.close}</button>`:'';
+    return `<div class="lobby-seat">${avatar(s.name,i)}<span class="nm">${esc(s.name)}</span>${tags.join('')}${del}</div>`;
+  }).join('');
+  const add=ON.isHost&&R.seats.length<6?`<button class="addai" data-act="add-ai">${ICON.plus}Computerspeler toevoegen</button>`:'';
+  return headerHTML('lobby')+`
+  <section class="hero"><p class="label">Wachtkamer</p><h2>Deel de code met je <em>medespelers</em></h2></section>
+  <div class="codebox">
+    <div class="code-letters" aria-label="Code ${ON.code.split('').join(' ')}">${ON.code.split('').map(c=>`<span>${c}</span>`).join('')}</div>
+    <button class="btn soft small" data-act="share">${ICON.share}Deel uitnodiging</button>
+  </div>
+  <section><p class="label">Spelers · ${R.seats.length} van 6</p><div class="seats">${rows}${add}</div></section>
+  <p class="foot">${ON.isHost?'Wie meedoet, verschijnt hier vanzelf. Start als iedereen er is.':`${esc(host?host.name:'De starter')} kan nog computerspelers toevoegen en start het spel.`}</p>`;
 }
 
 function gameHTML(){
   const t=T(), me=P(), tg=(t.phase==='decide')?target():null;
-  const human=!me.ai;
 
   const players=S.players.map((p,i)=>{
     const top=p.stack.length?p.stack[p.stack.length-1]:null;
@@ -677,24 +1058,24 @@ function gameHTML(){
     if(i===S.cur) cls.push('is-cur');
     if(tg&&tg.type==='steal'&&tg.from===i) cls.push('is-victim');
     if(i===S.cur&&t.phase==='done'&&t.result&&t.result.kind!=='bust') cls.push('got');
-    const k=p.stack.length;
-    return `<div class="${cls.join(' ')}">${avatar(p.name,p.c??i)}<div class="who"><div class="name">${esc(p.name)}</div><div class="meta"><span class="stat">${TILE_ICON}<b>${k}</b> ${k===1?'tegel':'tegels'}</span></div></div>${miniHTML(top)}</div>`;
+    const k=p.stack.length, you=ON&&p.uid===ON.uid;
+    return `<div class="${cls.join(' ')}">${avatar(p.name,p.c??i)}<div class="who"><div class="name">${esc(p.name)}${you?'<span class="you">jij</span>':''}</div><div class="meta"><span class="stat">${TILE_ICON}<b>${k}</b> ${k===1?'tegel':'tegels'}</span></div></div>${miniHTML(top)}</div>`;
   }).join('');
 
   const kf=new Set(t.kept), s=total(t), ready=hasWorm(t)&&s>=21;
   const firstNew=t.kept.length-ui.newKept;
   const keptDice=t.kept.length?t.kept.map((f,i)=>`<span class="die sm${i>=firstNew&&ui.newKept?' new':''}" style="--i:${i-firstNew}" title="${faceName(f)}">${dieSVG(f)}</span>`).join(''):'<span class="empty-tray">Nog niets apart gelegd</span>';
   ui.newKept=0;
-  const canPick=human&&t.phase==='pick';
-  const choosing=!human&&t.phase==='pick'&&ui.aiChoice!=null;
+  const choosing=t.phase==='pick'&&t.choice!=null;
+  const canPick=isMine()&&t.phase==='pick'&&!choosing;
   const rolled=t.rolled.map((f,i)=>{
     const used=kf.has(f), dis=!canPick||used;
-    const cls=['die']; if(used) cls.push('used'); if(choosing&&f===ui.aiChoice) cls.push('chosen');
+    const cls=['die']; if(used) cls.push('used'); if(choosing&&f===t.choice) cls.push('chosen');
     return `<button class="${cls.join(' ')}" style="--i:${i}" data-act="pick" data-f="${f}" ${dis?'disabled':''} aria-label="Leg alle ${f===6?'pieren':f+'-en'} apart">${dieSVG(f)}</button>`;
   }).join('');
   const pct=Math.min(s,40)/40*100;
 
-  return headerHTML(true)+`
+  return headerHTML('game')+`
   <section aria-label="Tegelrooster"><div class="grill">${S.center.map(c=>tileHTML(c,tg)).join('')}</div></section>
   <section aria-label="Spelers"><div class="players">${players}</div></section>
   <section class="card" aria-label="Worp van ${esc(me.name)}">
@@ -714,86 +1095,126 @@ function gameHTML(){
 function overHTML(){
   const ranked=S.players.map((p,i)=>({p,i,w:score(p),hi:p.stack.length?Math.max(...p.stack):0})).sort((a,b)=>b.w-a.w||b.hi-a.hi);
   const win=ranked[0];
-  const youWin=!win.p.ai&&humans()===1;
+  const youWin=ON?win.p.uid===ON.uid:(!win.p.ai&&humans()===1);
   const head=youWin?'Je hebt <em>gewonnen!</em>':`<em>${esc(win.p.name)}</em> wint!`;
   const CROWN='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 8l4.5 3.5L12 5l4.5 6.5L21 8l-2 10H5z"/></svg>';
-  const best=ranked[0];
   const rows=ranked.map(r=>{
-    const k=r.p.stack.length, isWin=r.w===best.w&&r.hi===best.hi;
+    const k=r.p.stack.length, isWin=r.w===win.w&&r.hi===win.hi, you=ON&&r.p.uid===ON.uid;
     const tiles=k?[...r.p.stack].sort((a,b)=>a-b).map(n=>miniHTML(n)).join(''):'<span class="no-tiles">Geen tegels</span>';
-    return `<div class="prow${isWin?' win':''}"><div class="score"><b>${r.w}</b><span>${r.w===1?'pier':'pieren'}</span></div><div class="who"><span class="name">${esc(r.p.name)}${isWin?CROWN:''}</span><span class="meta">${k} ${k===1?'tegel':'tegels'}</span></div><div class="ptiles" aria-label="Tegels van ${esc(r.p.name)}: ${k?r.p.stack.join(', '):'geen'}">${tiles}</div></div>`;
+    return `<div class="prow${isWin?' win':''}"><div class="score"><b>${r.w}</b><span>${r.w===1?'pier':'pieren'}</span></div><div class="who"><span class="name">${esc(r.p.name)}${isWin?CROWN:''}</span>${you?'<span class="you">jij</span>':''}<span class="meta">${k} ${k===1?'tegel':'tegels'}</span></div><div class="ptiles" aria-label="Tegels van ${esc(r.p.name)}: ${k?r.p.stack.join(', '):'geen'}">${tiles}</div></div>`;
   }).join('');
-  return headerHTML(false)+`
+  return headerHTML('over')+`
   <section class="hero"><p class="label">Uitslag</p><h2>${head}</h2></section>
   <div class="podium">${rows}</div>`;
 }
 
-function dockHTML(){
-  if(!S) return `<div class="dock-in"><button class="btn go" data-act="start">Start het spel</button></div>`;
-  if(S.over) return `<div class="dock-in"><button class="btn" data-act="again">Nog een potje</button><button class="btn soft" data-act="new">Andere spelers</button></div>`;
-  if(ui.confirm) return `<div class="dock-in" role="alertdialog" aria-label="Nieuw spel"><p>Dit spel stoppen en opnieuw beginnen?</p><button class="btn soft" data-act="cancel-new">Doorspelen</button><button class="btn" data-act="new">Nieuw spel</button></div>`;
-  const t=T(), me=P();
+const waitHTML=m=>`<div class="wait"><span class="dots"><i></i><i></i><i></i></span><span class="dock-msg" aria-live="polite">${m}</span></div>`;
+function dockHTML(scr){
+  if(ui.confirm==='new') return `<div class="dock-in" role="alertdialog" aria-label="Nieuw spel"><p>Dit spel stoppen en opnieuw beginnen?</p><button class="btn soft" data-act="cancel-new">Doorspelen</button><button class="btn" data-act="new">Nieuw spel</button></div>`;
+  if(ui.confirm==='leave') return `<div class="dock-in" role="alertdialog" aria-label="Online spel verlaten"><p>Dit online spel verlaten?${S&&!S.over?' De computer speelt dan voor je verder.':''}</p><button class="btn soft" data-act="cancel-new">Blijven</button><button class="btn" data-act="leave">Verlaten</button></div>`;
+  if(scr==='setup'){
+    if(ui.mode!=='online') return `<div class="dock-in"><button class="btn go" data-act="start">Start het spel</button></div>`;
+    if(ui.netBusy) return `<div class="dock-in">${waitHTML(esc(ui.netBusy))}</div>`;
+    return `<div class="dock-in"><button class="btn go" data-act="create" ${netReady()?'':'disabled'}>Nieuw online spel</button></div>`;
+  }
+  if(scr==='connecting') return `<div class="dock-in">${waitHTML('Verbinden…')}</div>`;
+  if(scr==='lobby'){
+    if(!ON.isHost){ const h=R.seats.find(s=>s.id===R.host); return `<div class="dock-in">${waitHTML(`Wachten tot <b>${esc(h?h.name:'de starter')}</b> het spel start`)}</div>`; }
+    return `<div class="dock-in"><button class="btn go" data-act="start-online" ${R.seats.length<2?'disabled':''}>${R.seats.length<2?'Wachten op medespelers':'Start het spel'}</button></div>`;
+  }
+  if(scr==='over'){
+    if(!ON) return `<div class="dock-in"><button class="btn" data-act="again">Nog een potje</button><button class="btn soft" data-act="new">Andere spelers</button></div>`;
+    if(ON.isHost) return `<div class="dock-in"><button class="btn" data-act="again-online">Nog een potje</button><button class="btn soft" data-act="ask-leave">Verlaten</button></div>`;
+    const h=R.seats.find(s=>s.id===R.host);
+    return `<div class="dock-in">${waitHTML(`Wachten tot <b>${esc(h?h.name:'de starter')}</b> een nieuw potje start`)}<button class="btn soft" data-act="ask-leave">Verlaten</button></div>`;
+  }
+  const t=T(), me=P(), mine=isMine();
+  let pre='';
+  if(ON){
+    const mineAi=S.players.find(p=>p.uid===ON.uid&&p.ai);
+    if(mineAi) pre+=`<div class="banner"><span>De computer speelt nu voor jou.</span><button class="btn soft small" data-act="reclaim">Zelf verder spelen</button></div>`;
+    if(!me.ai&&!mine&&Date.now()-ON.changed>HUMAN_STALL) pre+=`<div class="banner"><span><b>${esc(me.name)}</b> reageert niet.</span><button class="btn soft small" data-act="takeover" data-i="${S.cur}">Laat de computer spelen</button></div>`;
+  }
   if(t.phase==='done'&&t.result){
     const r=resultHTML(t.result,me);
-    if(me.ai) return `<div class="dock-in">${r}</div>`;
+    if(!mine) return `<div class="dock-in">${pre}${r}${me.ai?'':waitHTML(`Wachten tot <b>${esc(me.name)}</b> verder gaat`)}</div>`;
     const nxt=S.players[(S.cur+1)%S.players.length];
     const end=!S.center.some(c=>c.st==='open');
-    return `<div class="dock-in">${r}<button class="btn" data-act="next">${end?'Bekijk de uitslag':`Verder naar ${esc(nxt.name)}`}</button></div>`;
+    return `<div class="dock-in">${pre}${r}<button class="btn" data-act="next">${end?'Bekijk de uitslag':`Verder naar ${esc(nxt.name)}`}</button></div>`;
   }
-  const msg=`<p class="dock-msg" aria-live="polite">${S.msg}</p>`;
-  if(me.ai) return `<div class="dock-in"><div class="wait"><span class="dots"><i></i><i></i><i></i></span><span class="dock-msg" aria-live="polite">${S.msg}</span></div></div>`;
-  let a=msg;
+  if(!mine) return `<div class="dock-in">${pre}${waitHTML(statusMsg())}</div>`;
+  let a=pre+`<p class="dock-msg" aria-live="polite">${statusMsg()}</p>`;
   if(t.phase==='roll') a+=`<button class="btn" data-act="roll">Gooi ${left(t)} stenen</button>`;
   else if(t.phase==='decide'){
     const tg=target();
     if(tg) a+=`<button class="btn go" data-act="stop">${tg.type==='steal'?`Pik ${tg.n} af`:`Pak ${tg.n}`}</button>`;
     if(left(t)>0) a+=`<button class="btn${tg?' soft':''}" data-act="roll">Gooi verder (${left(t)})</button>`;
-  } else if(t.phase==='done'){
-    const nxt=S.players[(S.cur+1)%S.players.length];
-    const end=!S.center.some(c=>c.st==='open');
-    a=`<button class="btn" data-act="next">${end?'Bekijk de uitslag':`Verder naar ${esc(nxt.name)}`}</button>`;
   }
   return `<div class="dock-in">${a}</div>`;
 }
 
+function screen(){
+  if(ON){ if(!ON.applied||!R) return 'connecting'; if(R.status==='lobby') return 'lobby'; if(S) return S.over?'over':'game'; return 'connecting'; }
+  return !S?'setup':S.over?'over':'game';
+}
 function render(){
   const app=document.getElementById('app'), dock=document.getElementById('dock');
-  const focusId=document.activeElement&&document.activeElement.id;
-  app.innerHTML=!S?setupHTML():S.over?overHTML():gameHTML();
-  dock.innerHTML=dockHTML();
-  if(focusId){const el=document.getElementById(focusId);if(el)el.focus()}
+  const ae=document.activeElement, focusId=ae&&ae.id, sel=ae&&typeof ae.selectionStart==='number'?ae.selectionStart:null;
+  const scr=screen();
+  app.innerHTML=scr==='setup'?setupHTML():scr==='connecting'?connectingHTML():scr==='lobby'?lobbyHTML():scr==='over'?overHTML():gameHTML();
+  dock.innerHTML=dockHTML(scr);
+  if(focusId){ const el=document.getElementById(focusId); if(el){ el.focus(); if(sel!=null&&el.setSelectionRange) try{ el.setSelectionRange(sel,sel); }catch(e){} } }
 }
 
 /* ---------- invoer ---------- */
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]'); if(!b||b.disabled) return;
   const a=b.dataset.act;
-  const humanTurn=S&&!S.over&&!P().ai;
+  const myTurn=isMine();
   switch(a){
     case 'seat': seats[+b.dataset.i].type=b.dataset.type; ui.err=''; save(); render(); break;
+    case 'mode': ui.mode=b.dataset.m; pref.mode=ui.mode; ui.netErr=''; save(); render(); break;
     case 'start': startGame(); break;
-    case 'roll': if(humanTurn) doRoll(); break;
-    case 'pick': if(humanTurn) doPick(+b.dataset.f); break;
-    case 'stop': if(humanTurn) doStop(); break;
-    case 'next': if(humanTurn) advance(); break;
+    case 'roll': if(myTurn) doRoll(); break;
+    case 'pick': if(myTurn&&T().choice==null) doPick(+b.dataset.f); break;
+    case 'stop': if(myTurn) doStop(); break;
+    case 'next': if(myTurn) advance(); break;
     case 'fast': pref.fast=!pref.fast; save(); render(); schedule(); break;
     case 'sound': pref.sound=!soundOn(); save(); render(); if(soundOn()) playSetAside(2); break;
-    case 'ask-new': ui.confirm=true; render(); break;
+    case 'ask-new': ui.confirm='new'; render(); break;
+    case 'ask-leave': ui.confirm='leave'; render(); break;
     case 'cancel-new': ui.confirm=false; render(); break;
-    case 'new': clearTimeout(aiTimer); ui.confirm=false; S=null; save(); render(); break;
+    case 'new': clearTimeout(aiTimer); ui.confirm=false; S=null; ui.mode='local'; save(); render(); break;
     case 'again': startGame(); break;
+    case 'create': createOnline(); break;
+    case 'join': joinOnline(); break;
+    case 'reconnect': if(pref.online&&pref.online.code) enterOnline(pref.online.code); break;
+    case 'share': shareInvite(); break;
+    case 'add-ai': addComputer(); break;
+    case 'del-seat': removeSeat(b.dataset.id); break;
+    case 'start-online': startOnline(); break;
+    case 'again-online': againOnline(); break;
+    case 'leave': ui.confirm=false; leaveOnline(); break;
+    case 'takeover': takeOver(+b.dataset.i); break;
+    case 'reclaim': reclaim(); break;
     case 'update': if(ui.update){ clearTimeout(aiTimer); save(); const go=ui.update; ui.update=null; renderUpdate(true); go(); } break;
   }
 });
 ['touchend','pointerup','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
 document.addEventListener('input',e=>{
-  const i=e.target.dataset&&e.target.dataset.seat;
-  if(i!=null){
-    seats[+i].name=e.target.value; save();
-    const av=e.target.parentElement.querySelector('.avatar');
-    if(av) av.textContent=(e.target.value.trim().charAt(0)||'?').toUpperCase();
+  const el=e.target, ds=el.dataset||{};
+  if(ds.seat!=null){
+    seats[+ds.seat].name=el.value; save();
+    const av=el.parentElement.querySelector('.avatar');
+    if(av) av.textContent=(el.value.trim().charAt(0)||'?').toUpperCase();
+  } else if(ds.pref==='name'){ pref.name=el.value; save(); }
+  else if(ds.ui==='joinCode'){
+    const v=el.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);
+    if(v!==el.value) el.value=v;
+    ui.joinCode=v;
   }
 });
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target&&e.target.id==='on-code'){ e.preventDefault(); joinOnline(); } });
 function hover(f){
   const r=document.getElementById('rolled'); if(!r||!r.classList.contains('can')) return;
   r.querySelectorAll('.die').forEach(d=>d.classList.toggle('hi',f!=null&&d.dataset.f===String(f)&&!d.disabled));
@@ -808,9 +1229,14 @@ function boot(d){
     const l=load();
     if(l){ if(Array.isArray(l.seats)&&l.seats.length===6) seats=l.seats; if(l.pref) pref=l.pref; if(l.S&&!l.S.over) S=l.S; }
   }
-  render(); schedule();
+  if(S&&S.turn&&S.msg!==undefined) delete S.msg;
+  ui.mode=pref.mode==='online'?'online':'local';
+  const h=(location.hash||'').match(/^#([A-Za-z]{4})$/);
+  if(h){ ui.mode='online'; ui.joinCode=h[1].toUpperCase(); try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} }
+  if(!h&&pref.online&&pref.online.code&&netReady()) enterOnline(pref.online.code);
+  else { render(); schedule(); }
 }
-try{window.claude?.hot?.snapshot?.(()=>({S,seats,pref}))}catch(e){}
+try{window.claude?.hot?.snapshot?.(()=>({S:ON?stashS:S,seats,pref}))}catch(e){}
 if(window.claude?.hot?.ready) window.claude.hot.ready(boot); else boot(window.claude?.hot?.data ?? null);
 })();
 </script>
