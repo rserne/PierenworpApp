@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.ico?v=15" sizes="48x48">
-<link rel="icon" href="favicon-32.png?v=15" type="image/png" sizes="32x32">
-<link rel="icon" href="icon-192.png?v=15" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=15" sizes="180x180">
+<link rel="icon" href="favicon.ico?v=16" sizes="48x48">
+<link rel="icon" href="favicon-32.png?v=16" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png?v=16" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=16" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -234,6 +234,20 @@ details.rules p{margin:0 0 12px;color:var(--muted);max-width:62ch}
 .up-btn{flex:none;border:0;border-radius:11px;padding:10px 15px;font-weight:700;font-size:14.5px;background:var(--pink);color:var(--pink-ink)}
 @keyframes drop{from{transform:translate(-50%,-24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 /* online spelen */
+.choice{background:var(--surface);box-shadow:var(--shadow);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.choice.invited{box-shadow:0 0 0 2px var(--pink),var(--shadow-lift)}
+.choice-head{display:flex;gap:14px;align-items:flex-start}
+.choice-head h3{margin:2px 0 3px;font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:-.02em}
+.choice-head p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.4}
+.choice-icon{width:42px;height:42px;flex:none;border-radius:13px;display:grid;place-items:center}
+.choice-icon svg{width:22px;height:22px}
+.choice-icon.start{background:var(--mint-soft);color:var(--mint)}
+.choice-icon.join{background:var(--pink-soft);color:var(--pink)}
+.choice .btn{flex:none}
+.choice .join-row .btn{flex:0 0 auto;min-height:0;padding:0 20px}
+.choice .field{background:var(--surface-2);box-shadow:none}
+.dock[hidden]{display:none!important}
+
 .modes{display:flex;width:100%}
 .modes button{flex:1;padding:11px 10px;font-size:15px}
 .online{display:flex;flex-direction:column;gap:16px}
@@ -650,6 +664,7 @@ const ICON={
   soundOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>',
   fast:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></svg>',
   leave:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h10"/></svg>',
+  enter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M14 8l4 4-4 4"/><path d="M18 12H8"/></svg>',
   close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>',
@@ -1003,17 +1018,24 @@ function setupHTML(){
   } else {
     const off=!netReady();
     const resume=pref.online&&pref.online.code;
+    const creating=ui.netBusy==='Spel aanmaken…', joining=ui.netBusy==='Meedoen…', dis=off||!!ui.netBusy;
+    const invited=!!ui.joinCode&&ui.joinCode.length===4;
+    const startCard=`<div class="choice">
+        <div class="choice-head"><span class="choice-icon start">${ICON.plus}</span><div><h3>Nieuw spel starten</h3><p>Je krijgt een code van vier letters die je deelt met je medespelers.</p></div></div>
+        <button class="btn go" data-act="create" ${dis?'disabled':''}>${creating?'Spel aanmaken…':'Start een spel'}</button></div>`;
+    const joinCard=`<div class="choice${invited?' invited':''}">
+        <div class="choice-head"><span class="choice-icon join">${ICON.enter}</span><div><h3>Meedoen met een code</h3><p>${invited?'Je bent uitgenodigd. Vul je naam in en doe mee.':'Heb je een code gekregen? Vul hem hier in.'}</p></div></div>
+        <div class="join-row"><input id="on-code" class="field code" data-ui="joinCode" value="${esc(ui.joinCode||'')}" maxlength="4" placeholder="ABCD" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Code van het spel">
+        <button class="btn" data-act="join" ${dis?'disabled':''}>${joining?'Meedoen…':'Doe mee'}</button></div></div>`;
     body=`<section class="online">
-      <p class="lede">Iedereen speelt op zijn eigen telefoon. Start een spel en deel de code, of doe mee met de code van een ander.</p>
       ${off?`<p class="notice">Online spelen wordt nog ingesteld. Zodra dat klaar is, kun je hier een spel starten.</p>`:''}
       ${ui.netMsg?`<p class="notice">${esc(ui.netMsg)}</p>`:''}
       ${resume?`<div class="notice resume"><span>Je speelde mee met spel <b>${esc(pref.online.code)}</b>.</span><button class="btn soft small" data-act="reconnect">Opnieuw verbinden</button></div>`:''}
       <div class="fieldset"><label class="label" for="on-name">Jouw naam</label>
         <input id="on-name" class="field" data-pref="name" value="${esc(pref.name||'')}" maxlength="14" placeholder="Bijvoorbeeld Rob" autocomplete="nickname"></div>
-      <div class="fieldset"><label class="label" for="on-code">Meedoen met een code</label>
-        <div class="join-row"><input id="on-code" class="field code" data-ui="joinCode" value="${esc(ui.joinCode||'')}" maxlength="4" placeholder="ABCD" autocapitalize="characters" autocomplete="off" spellcheck="false" inputmode="text">
-        <button class="btn soft small" data-act="join" ${off||ui.netBusy?'disabled':''}>Doe mee</button></div></div>
       ${ui.netErr?`<p class="err" role="alert">${esc(ui.netErr)}</p>`:''}
+      ${invited?joinCard+startCard:startCard+joinCard}
+      <p class="foot">Iedereen speelt op zijn eigen telefoon.</p>
     </section>
     ${rulesHTML()}`;
   }
@@ -1114,8 +1136,8 @@ function dockHTML(scr){
   if(ui.confirm==='leave') return `<div class="dock-in" role="alertdialog" aria-label="Online spel verlaten"><p>Dit online spel verlaten?${S&&!S.over?' De computer speelt dan voor je verder.':''}</p><button class="btn soft" data-act="cancel-new">Blijven</button><button class="btn" data-act="leave">Verlaten</button></div>`;
   if(scr==='setup'){
     if(ui.mode!=='online') return `<div class="dock-in"><button class="btn go" data-act="start">Start het spel</button></div>`;
-    if(ui.netBusy) return `<div class="dock-in">${waitHTML(esc(ui.netBusy))}</div>`;
-    return `<div class="dock-in"><button class="btn go" data-act="create" ${netReady()?'':'disabled'}>Nieuw online spel</button></div>`;
+    if(ui.netBusy==='Verbinden…') return `<div class="dock-in">${waitHTML('Verbinden…')}</div>`;
+    return '';
   }
   if(scr==='connecting') return `<div class="dock-in">${waitHTML('Verbinden…')}</div>`;
   if(scr==='lobby'){
@@ -1162,7 +1184,7 @@ function render(){
   const ae=document.activeElement, focusId=ae&&ae.id, sel=ae&&typeof ae.selectionStart==='number'?ae.selectionStart:null;
   const scr=screen();
   app.innerHTML=scr==='setup'?setupHTML():scr==='connecting'?connectingHTML():scr==='lobby'?lobbyHTML():scr==='over'?overHTML():gameHTML();
-  dock.innerHTML=dockHTML(scr);
+  const dh=dockHTML(scr); dock.innerHTML=dh; dock.hidden=!dh;
   if(focusId){ const el=document.getElementById(focusId); if(el){ el.focus(); if(sel!=null&&el.setSelectionRange) try{ el.setSelectionRange(sel,sel); }catch(e){} } }
 }
 
