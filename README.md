@@ -12,6 +12,7 @@ De app is een PWA: je zet hem op het beginscherm van je telefoon, en na het eers
 | `manifest.webmanifest` | Naam, kleuren en iconen voor het beginscherm |
 | `sw.js` | Service worker, voor offline spelen |
 | `icon-*.png`, `apple-touch-icon.png` | App-iconen |
+| `favicon.ico`, `favicon-32.png` | Icoontje in browsertabbladen en favorieten |
 
 ## Online zetten
 
@@ -40,6 +41,6 @@ Open daarna http://localhost:8000 in je browser.
 
 ## Een nieuwe versie uitrollen
 
-Verhoog in `sw.js` het versienummer, bijvoorbeeld van `pierenworp-v11` naar `pierenworp-v12`, en zet de bestanden op GitHub.
+Verhoog in `sw.js` het versienummer, bijvoorbeeld van `pierenworp-v12` naar `pierenworp-v13`, en zet de bestanden op GitHub.
 
 Wie de app open heeft, krijgt dan bovenin de melding *Er is een nieuwe versie van Pierenworp*. Een tik op **Vernieuwen** laadt de nieuwe versie meteen; een lopend spel blijft bewaard. De app zoekt naar updates bij het openen en elk half uur.
