@@ -1,5 +1,5 @@
 // Pierenworp service worker. Verhoog CACHE bij elke nieuwe versie.
-const CACHE='pierenworp-v17';
+const CACHE='pierenworp-v18';
 const ASSETS=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png','favicon.ico','favicon-32.png'];
 
 // Nieuwe versie downloaden, maar wachten tot de speler op 'Vernieuwen' tikt.

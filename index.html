@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.ico?v=17" sizes="48x48">
-<link rel="icon" href="favicon-32.png?v=17" type="image/png" sizes="32x32">
-<link rel="icon" href="icon-192.png?v=17" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=17" sizes="180x180">
+<link rel="icon" href="favicon.ico?v=18" sizes="48x48">
+<link rel="icon" href="favicon-32.png?v=18" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png?v=18" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=18" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -63,7 +63,7 @@
 html,body{background:var(--bg);color:var(--ink)}
 body{font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
 *{box-sizing:border-box}
-button{font:inherit;color:inherit;cursor:pointer}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
 .wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:12px calc(230px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:20px}
 
@@ -233,6 +233,11 @@ details.rules p{margin:0 0 12px;color:var(--muted);max-width:62ch}
 .update span{flex:1;min-width:0}
 .up-btn{flex:none;border:0;border-radius:11px;padding:10px 15px;font-weight:700;font-size:14.5px;background:var(--pink);color:var(--pink-ink)}
 @keyframes drop{from{transform:translate(-50%,-24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+/* in Safari (niet als app op het beginscherm) ligt de onderbalk van de browser over de onderkant: houd de knoppen daar vandaan */
+@media not all and (display-mode: standalone){
+  .dock{padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))}
+  .wrap{padding-block-end:calc(250px + env(safe-area-inset-bottom,0px))}
+}
 /* online spelen */
 .btn.ping{animation:ping 1.1s ease-out 3}
 @keyframes ping{0%{box-shadow:0 0 0 0 var(--pink)}70%{box-shadow:0 0 0 14px transparent}100%{box-shadow:0 0 0 0 transparent}}
@@ -1207,7 +1212,9 @@ function screen(){
   if(ON){ if(!ON.applied||!R) return 'connecting'; if(R.status==='lobby') return 'lobby'; if(S) return S.over?'over':'game'; return 'connecting'; }
   return !S?'setup':S.over?'over':'game';
 }
+let pressing=0, renderLater=false;
 function render(){
+  if(pressing&&Date.now()-pressing<1500){ renderLater=true; return; }   // eerst de tik laten afmaken
   const app=document.getElementById('app'), dock=document.getElementById('dock');
   const ae=document.activeElement, focusId=ae&&ae.id, sel=ae&&typeof ae.selectionStart==='number'?ae.selectionStart:null;
   const scr=screen();
@@ -1253,6 +1260,11 @@ document.addEventListener('click',e=>{
   }
 });
 ['touchend','pointerup','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{capture:true,passive:true}));
+document.addEventListener('pointerdown',e=>{ if(e.target.closest&&e.target.closest('button')) pressing=Date.now(); },{capture:true,passive:true});
+['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev,()=>{
+  if(!pressing) return; pressing=0;
+  if(renderLater){ renderLater=false; setTimeout(render,60); }
+},{capture:true,passive:true}));
 document.addEventListener('input',e=>{
   const el=e.target, ds=el.dataset||{};
   if(ds.seat!=null){
