@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.ico?v=20" sizes="48x48">
-<link rel="icon" href="favicon-32.png?v=20" type="image/png" sizes="32x32">
-<link rel="icon" href="icon-192.png?v=20" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20" sizes="180x180">
+<link rel="icon" href="favicon.ico?v=21" sizes="48x48">
+<link rel="icon" href="favicon-32.png?v=21" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png?v=21" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=21" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -26,7 +26,7 @@
   --ink:#1d1626; --muted:#6c6276;
   --pink:#f2457d; --pink-ink:#ffffff; --pink-soft:#ffe0ea;
   --mint:#12b98d; --mint-ink:#ffffff; --mint-soft:#d6f5ea;
-  --bad:#e5484d; --bad-ink:#ffffff; --bad-soft:#ffe6e6;
+  --bad:#2b2034; --bad-ink:#f6f1f9; --bad-soft:rgba(43,32,52,.08);
   --die:#ffffff; --pip:#1d1626; --tile:#ffffff;
   --shadow:0 1px 2px rgba(29,22,38,.06),0 6px 20px rgba(29,22,38,.07);
   --shadow-lift:0 2px 4px rgba(29,22,38,.08),0 14px 30px rgba(29,22,38,.14);
@@ -41,7 +41,7 @@
   --ink:#f3eef7; --muted:#a297ac;
   --pink:#ff5f93; --pink-ink:#1d0b13; --pink-soft:rgba(255,95,147,.16);
   --mint:#34dcab; --mint-ink:#04201a; --mint-soft:rgba(52,220,171,.15);
-  --bad:#ff5f66; --bad-ink:#1c0607; --bad-soft:rgba(255,95,102,.16);
+  --bad:#f3eef7; --bad-ink:#1d1626; --bad-soft:rgba(243,238,247,.12);
   --die:#f8f4fb; --pip:#1d1626; --tile:#241e2a;
   --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
   --shadow-lift:0 1px 0 rgba(255,255,255,.06) inset,0 16px 34px rgba(0,0,0,.55);
@@ -53,7 +53,7 @@
   --ink:#f3eef7; --muted:#a297ac;
   --pink:#ff5f93; --pink-ink:#1d0b13; --pink-soft:rgba(255,95,147,.16);
   --mint:#34dcab; --mint-ink:#04201a; --mint-soft:rgba(52,220,171,.15);
-  --bad:#ff5f66; --bad-ink:#1c0607; --bad-soft:rgba(255,95,102,.16);
+  --bad:#f3eef7; --bad-ink:#1d1626; --bad-soft:rgba(243,238,247,.12);
   --die:#f8f4fb; --pip:#1d1626; --tile:#241e2a;
   --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
   --shadow-lift:0 1px 0 rgba(255,255,255,.06) inset,0 16px 34px rgba(0,0,0,.55);
@@ -164,13 +164,14 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .result.take .r-title{color:var(--mint)}
 .result.steal{background:var(--pink-soft)}
 .result.steal .r-title{color:var(--pink)}
-.result.bust{background:var(--bad);color:var(--bad-ink)}
-.result.bust .r-sub{opacity:.92}
+.result.bust{background:var(--bad);color:var(--bad-ink);box-shadow:var(--shadow-lift)}
+.result.bust .r-title{color:var(--pink)}
+.result.bust .r-sub{opacity:.85}
 .result .bigtile{width:44px;height:68px;flex:none;border-radius:10px;background:var(--tile);box-shadow:var(--shadow-lift);display:flex;flex-direction:column;align-items:center;padding:6px 0}
 .result .bigtile .num{font-family:var(--f-display);font-weight:700;font-size:17px;line-height:1;letter-spacing:-.03em;color:var(--ink)}
 .result .bigtile .worms{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;width:50%;margin-top:5px}
 .result .bigtile .worms svg{width:100%;height:auto;display:block}
-.result .bust-icon{width:44px;height:44px;flex:none;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center}
+.result .bust-icon{width:44px;height:44px;flex:none;border-radius:50%;background:var(--pink);color:var(--pink-ink);display:grid;place-items:center}
 .result .bust-icon svg{width:24px;height:24px}
 @keyframes rise{from{transform:translateY(16px) scale(.96);opacity:0}to{transform:none;opacity:1}}
 .btn{flex:1 1 140px;min-height:54px;border:0;border-radius:16px;padding:0 18px;font-weight:700;font-size:16.5px;background:var(--pink);color:var(--pink-ink);box-shadow:0 6px 16px -6px var(--pink);transition:transform .12s,filter .12s}
