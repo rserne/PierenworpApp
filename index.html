@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.ico?v=21" sizes="48x48">
-<link rel="icon" href="favicon-32.png?v=21" type="image/png" sizes="32x32">
-<link rel="icon" href="icon-192.png?v=21" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=21" sizes="180x180">
+<link rel="icon" href="favicon.ico?v=22" sizes="48x48">
+<link rel="icon" href="favicon-32.png?v=22" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png?v=22" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=22" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -27,6 +27,7 @@
   --pink:#f2457d; --pink-ink:#ffffff; --pink-soft:#ffe0ea;
   --mint:#12b98d; --mint-ink:#ffffff; --mint-soft:#d6f5ea;
   --bad:#2b2034; --bad-ink:#f6f1f9; --bad-soft:rgba(43,32,52,.08);
+  --soil:#4a3446; --soil-dark:#2b2034;
   --die:#ffffff; --pip:#1d1626; --tile:#ffffff;
   --shadow:0 1px 2px rgba(29,22,38,.06),0 6px 20px rgba(29,22,38,.07);
   --shadow-lift:0 2px 4px rgba(29,22,38,.08),0 14px 30px rgba(29,22,38,.14);
@@ -42,6 +43,7 @@
   --pink:#ff5f93; --pink-ink:#1d0b13; --pink-soft:rgba(255,95,147,.16);
   --mint:#34dcab; --mint-ink:#04201a; --mint-soft:rgba(52,220,171,.15);
   --bad:#f3eef7; --bad-ink:#1d1626; --bad-soft:rgba(243,238,247,.12);
+  --soil:#5a4256; --soil-dark:#08060a;
   --die:#f8f4fb; --pip:#1d1626; --tile:#241e2a;
   --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
   --shadow-lift:0 1px 0 rgba(255,255,255,.06) inset,0 16px 34px rgba(0,0,0,.55);
@@ -54,6 +56,7 @@
   --pink:#ff5f93; --pink-ink:#1d0b13; --pink-soft:rgba(255,95,147,.16);
   --mint:#34dcab; --mint-ink:#04201a; --mint-soft:rgba(52,220,171,.15);
   --bad:#f3eef7; --bad-ink:#1d1626; --bad-soft:rgba(243,238,247,.12);
+  --soil:#5a4256; --soil-dark:#08060a;
   --die:#f8f4fb; --pip:#1d1626; --tile:#241e2a;
   --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px rgba(0,0,0,.35);
   --shadow-lift:0 1px 0 rgba(255,255,255,.06) inset,0 16px 34px rgba(0,0,0,.55);
@@ -289,7 +292,39 @@ details.rules p{margin:0 0 12px;color:var(--muted);max-width:62ch}
 .banner{flex:1 1 100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);box-shadow:var(--shadow);border-radius:14px;padding:8px 8px 8px 14px;font-size:14.5px}
 .banner span{flex:1 1 160px}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 104px);transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);font-weight:600;font-size:14.5px;padding:10px 16px;border-radius:12px;box-shadow:var(--shadow-lift);max-width:calc(100% - 32px)}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* uitslag: de pier kruipt uit zijn hol */
+.over-hero{display:flex;align-items:flex-end;gap:8px;min-height:150px}
+.over-hero .hero{flex:1;min-width:0;padding-bottom:22px}
+.pw-stage{position:relative;width:130px;height:150px;flex:none}
+.pw-stage svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.pw-confetti{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.pw-confetti i{position:absolute;left:62px;top:30px;width:9px;height:9px;border-radius:2px;will-change:transform,opacity}
+.pw-confetti i.round{border-radius:50%}
+.pw-confetti i.tile{width:10px;height:14px;border-radius:3px;background:var(--surface)!important;box-shadow:inset 0 0 0 1.5px var(--line)}
+.pw-worm,.pw-sway,.pw-hop,.pw-droop{transform-box:view-box;transform-origin:65px 140px}
+.pw-play .pw-worm{animation:pwRise .9s cubic-bezier(.2,.9,.3,1.25) both}
+.pw-sway{animation:pwSway 1.6s ease-in-out infinite}
+.pw-eyes{transform-box:view-box;transform-origin:65px 34px;animation:pwBlink 3.4s infinite}
+.pw-pupils{animation:pwLook 4s ease-in-out infinite}
+.pw-win,.pw-lose{display:none}
+.pw-won .pw-win,.pw-lost .pw-lose{display:inline}
+.pw-won.pw-play .pw-hop{animation:pwHop .55s cubic-bezier(.3,.7,.4,1) .9s 2}
+.pw-lost.pw-play .pw-droop{animation:pwDroop .9s ease-in-out 2.2s forwards}
+.pw-lost.pw-settled .pw-droop{transform:translateY(26px) rotate(-12deg)}
+.pw-lost .pw-pupils{animation:pwAside 4.5s ease-in-out .9s forwards}
+.pw-lost.pw-settled .pw-pupils{animation:none;transform:translate(-3.5px,-1.5px)}
+.pw-lost .pw-sway{animation-duration:2.6s}
+.pw-sweat{opacity:0}
+.pw-lost.pw-play .pw-sweat{animation:pwSweat 1.6s ease-in 2.4s 2}
+@keyframes pwRise{0%{transform:translateY(120px)}100%{transform:none}}
+@keyframes pwSway{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+@keyframes pwHop{0%,100%{transform:translateY(0)}45%{transform:translateY(-22px) scaleY(1.04)}}
+@keyframes pwDroop{to{transform:translateY(26px) rotate(-12deg)}}
+@keyframes pwBlink{0%,46%,52%,100%{transform:scaleY(1)}49%{transform:scaleY(.1)}}
+@keyframes pwLook{0%,100%{transform:translate(0,0)}30%{transform:translate(2px,-1px)}65%{transform:translate(-2px,1px)}}
+@keyframes pwAside{0%{transform:translate(0,0)}25%,100%{transform:translate(-3.5px,-1.5px)}}
+@keyframes pwSweat{0%{opacity:0;transform:translateY(0)}20%{opacity:1}100%{opacity:0;transform:translateY(16px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.pw-confetti{display:none}}
 </style>
 <style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -1147,10 +1182,55 @@ function gameHTML(){
   </section>`;
 }
 
+/* De pier bij de uitslag: kruipt uit zijn hol, blij bij winst, sip als een ander wint */
+function pierStageHTML(won,play){
+  const A='M65 178 C 65 145, 45 124, 53 100 S 69 72, 65 52', B='M65 178 C 65 145, 85 124, 77 100 S 61 72, 65 52';
+  const morph=`<animate attributeName="d" dur="1.2s" repeatCount="indefinite" values="${A};${B};${A}" calcMode="spline" keyTimes="0;.5;1" keySplines=".45 0 .55 1;.45 0 .55 1"/>`;
+  return `<div class="pw-stage ${won?'pw-won':'pw-lost'} ${play?'pw-play':'pw-settled'}" aria-hidden="true"><div class="pw-confetti" id="pw-confetti"></div>
+  <svg viewBox="0 0 130 150"><defs><clipPath id="pwClip"><rect x="-40" y="-60" width="210" height="200"/></clipPath></defs>
+    <ellipse cx="65" cy="140" rx="44" ry="10" fill="var(--soil-dark)"/>
+    <g clip-path="url(#pwClip)"><g class="pw-worm"><g class="pw-droop"><g class="pw-hop"><g class="pw-sway">
+      <path d="${A}" fill="none" stroke="#f2457d" stroke-width="22" stroke-linecap="round">${morph}</path>
+      <path d="${A}" fill="none" stroke="#000" stroke-opacity=".1" stroke-width="22" stroke-dasharray="3 8">${morph}</path>
+      <circle cx="65" cy="46" r="25" fill="#f2457d"/>
+      <circle cx="48" cy="56" r="5" fill="#fff" fill-opacity=".45"/><circle cx="82" cy="56" r="5" fill="#fff" fill-opacity=".45"/>
+      <g class="pw-eyes">
+        <circle cx="55" cy="34" r="11" fill="#fff" stroke="#1d1626" stroke-width="2.4"/><circle cx="76" cy="34" r="11" fill="#fff" stroke="#1d1626" stroke-width="2.4"/>
+        <g class="pw-pupils"><circle cx="57" cy="35" r="5.4" fill="#1d1626"/><circle cx="78" cy="34" r="5.4" fill="#1d1626"/>
+          <circle cx="58.6" cy="33.2" r="1.7" fill="#fff"/><circle cx="79.6" cy="32.2" r="1.7" fill="#fff"/></g>
+      </g>
+      <path class="pw-win" d="M55 54 Q65 68 75 54 Z" fill="#1d1626"/><path class="pw-win" d="M60 59.5 Q65 64.5 70 59.5 Z" fill="#ff9db8"/>
+      <path class="pw-lose" d="M57 60 Q65 54.5 73 60" fill="none" stroke="#1d1626" stroke-width="2.6" stroke-linecap="round"/>
+      <path class="pw-sweat" d="M88 30 q-4 7 0 9 q4 -2 0 -9z" fill="#8fd3ff"/>
+    </g></g></g></g></g>
+    <path d="M21 140 A44 10 0 0 0 109 140" fill="none" stroke="var(--soil)" stroke-width="4" stroke-linecap="round"/>
+  </svg></div>`;
+}
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box=document.getElementById('pw-confetti'); if(!box||!box.animate) return;
+  const colors=['var(--pink)','var(--mint)','var(--p2)','var(--p4)'];
+  for(let i=0;i<28;i++){
+    const el=document.createElement('i');
+    if(i%7===0) el.className='tile'; else if(i%3===0) el.className='round';
+    el.style.background=colors[i%colors.length];
+    box.appendChild(el);
+    const dx=(Math.random()*2-1)*120, up=60+Math.random()*90, fall=80+Math.random()*60, rot=(Math.random()*2-1)*540;
+    el.animate([
+      {transform:'translate(0,0) rotate(0deg) scale(.6)',opacity:1},
+      {transform:`translate(${dx*.6}px,${-up}px) rotate(${rot*.5}deg) scale(1)`,opacity:1,offset:.35},
+      {transform:`translate(${dx}px,${fall}px) rotate(${rot}deg) scale(.9)`,opacity:0}
+    ],{duration:1500+Math.random()*700,easing:'cubic-bezier(.2,.7,.4,1)',fill:'forwards'}).onfinish=()=>el.remove();
+  }
+}
+
 function overHTML(){
   const ranked=S.players.map((p,i)=>({p,i,w:score(p),hi:p.stack.length?Math.max(...p.stack):0})).sort((a,b)=>b.w-a.w||b.hi-a.hi);
   const win=ranked[0];
   const youWin=ON?win.p.uid===ON.uid:(!win.p.ai&&humans()===1);
+  const happy=ON?youWin:!win.p.ai;                       // blije pier als jij (of een mens aan deze telefoon) wint
+  const key=ranked.map(r=>r.p.name+':'+r.w).join('|');
+  const play=ui.overKey!==key; if(play) ui.overKey=key;
   const head=youWin?'Je hebt <em>gewonnen!</em>':`<em>${esc(win.p.name)}</em> wint!`;
   const CROWN='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 8l4.5 3.5L12 5l4.5 6.5L21 8l-2 10H5z"/></svg>';
   const rows=ranked.map(r=>{
@@ -1158,8 +1238,9 @@ function overHTML(){
     const tiles=k?[...r.p.stack].sort((a,b)=>a-b).map(n=>miniHTML(n)).join(''):'<span class="no-tiles">Geen tegels</span>';
     return `<div class="prow${isWin?' win':''}"><div class="score"><b>${r.w}</b><span>${r.w===1?'pier':'pieren'}</span></div><div class="who"><span class="name">${esc(r.p.name)}${isWin?CROWN:''}</span>${you?'<span class="you">jij</span>':''}<span class="meta">${k} ${k===1?'tegel':'tegels'}</span></div><div class="ptiles" aria-label="Tegels van ${esc(r.p.name)}: ${k?r.p.stack.join(', '):'geen'}">${tiles}</div></div>`;
   }).join('');
+  ui.overPlay=play&&happy;
   return headerHTML('over')+`
-  <section class="hero"><p class="label">Uitslag</p><h2>${head}</h2></section>
+  <div class="over-hero"><section class="hero"><p class="label">Uitslag</p><h2>${head}</h2></section>${pierStageHTML(happy,play)}</div>
   <div class="podium">${rows}</div>`;
 }
 
@@ -1221,6 +1302,8 @@ function render(){
   const scr=screen();
   app.innerHTML=scr==='setup'?setupHTML():scr==='connecting'?connectingHTML():scr==='lobby'?lobbyHTML():scr==='over'?overHTML():gameHTML();
   const dh=dockHTML(scr); dock.innerHTML=dh; dock.hidden=!dh;
+  if(scr!=='over') ui.overKey=null;
+  if(scr==='over'&&ui.overPlay){ ui.overPlay=false; setTimeout(confetti,950); setTimeout(confetti,1500); }
   const tt=ON&&scr==='game'&&isMine()?'● Jouw beurt · Pierenworp':'Pierenworp';
   if(document.title!==tt) document.title=tt;
   if(focusId){ const el=document.getElementById(focusId); if(el){ el.focus(); if(sel!=null&&el.setSelectionRange) try{ el.setSelectionRange(sel,sel); }catch(e){} } }
