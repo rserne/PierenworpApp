@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.ico?v=22" sizes="48x48">
-<link rel="icon" href="favicon-32.png?v=22" type="image/png" sizes="32x32">
-<link rel="icon" href="icon-192.png?v=22" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=22" sizes="180x180">
+<link rel="icon" href="favicon.ico?v=23" sizes="48x48">
+<link rel="icon" href="favicon-32.png?v=23" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png?v=23" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=23" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -913,7 +913,8 @@ function enterOnline(code){
   clearTimeout(aiTimer); clearTimeout(stallTimer);
   S=null; R=null; latest=undefined;
   ui.confirm=false; ui.netErr=''; ui.netMsg=''; ui.netBusy='Verbinden…'; ui.mode='online';
-  ON={code,uid:null,ver:null,applied:false,dirty:false,isHost:false,changed:Date.now(),unsub:null};
+  ON={code,uid:null,ver:null,applied:false,dirty:false,isHost:false,changed:Date.now(),started:Date.now(),unsub:null};
+  setTimeout(()=>{ if(ON&&!ON.applied) render(); },7200);
   pref.online={code}; pref.mode='online'; save();
   render();
   const me=ON;
@@ -981,9 +982,9 @@ async function joinOnline(){
 }
 async function leaveOnline(){
   if(!ON) return;
-  if(ON.uid){
+  if(ON.uid&&navigator.onLine!==false){
     try{
-      await mutateRoom((d,uid)=>{
+      await Promise.race([new Promise(r=>setTimeout(r,2500)), mutateRoom((d,uid)=>{
         const others=d.seats.filter(s=>!s.ai&&s.id!==uid);
         if(d.status==='lobby') d.seats=d.seats.filter(s=>s.id!==uid);
         else{
@@ -993,7 +994,7 @@ async function leaveOnline(){
         if(!others.length) return null;                  // laatste mens weg: kamer opruimen
         if(d.host===uid) d.host=others[0].id;
         return d;
-      });
+      })]);
     }catch(e){}
   }
   endOnline('');
@@ -1114,8 +1115,9 @@ function setupHTML(){
 }
 
 function connectingHTML(){
+  const slow=ON&&Date.now()-ON.started>7000;
   return headerHTML('lobby')+`<section class="hero"><p class="label">Online spel ${ON?esc(ON.code):''}</p><h2>Verbinden…</h2>
-  <p class="lede">Even geduld, we halen het spel op.</p></section>`;
+  <p class="lede">${slow?'Dit duurt lang. Controleer je internetverbinding, of speel zolang op deze telefoon.':'Even geduld, we halen het spel op.'}</p></section>`;
 }
 
 function lobbyHTML(){
@@ -1253,7 +1255,10 @@ function dockHTML(scr){
     if(ui.netBusy==='Verbinden…') return `<div class="dock-in">${waitHTML('Verbinden…')}</div>`;
     return '';
   }
-  if(scr==='connecting') return `<div class="dock-in">${waitHTML('Verbinden…')}</div>`;
+  if(scr==='connecting'){
+    if(ON&&Date.now()-ON.started>7000) return `<div class="dock-in"><button class="btn soft" data-act="stop-connect">Stoppen</button></div>`;
+    return `<div class="dock-in">${waitHTML('Verbinden…')}</div>`;
+  }
   if(scr==='lobby'){
     if(!ON.isHost){ const h=R.seats.find(s=>s.id===R.host); return `<div class="dock-in">${waitHTML(`Wachten tot <b>${esc(h?h.name:'de starter')}</b> het spel start`)}</div>`; }
     return `<div class="dock-in"><button class="btn go" data-act="start-online" ${R.seats.length<2?'disabled':''}>${R.seats.length<2?'Wachten op medespelers':'Start het spel'}</button></div>`;
@@ -1332,6 +1337,7 @@ document.addEventListener('click',e=>{
     case 'create': createOnline(); break;
     case 'join': joinOnline(); break;
     case 'reconnect': if(pref.online&&pref.online.code) enterOnline(pref.online.code); break;
+    case 'stop-connect': endOnline('Geen verbinding met het online spel. Je kunt het later opnieuw proberen.',true); break;
     case 'share': shareInvite(); break;
     case 'add-ai': addComputer(); break;
     case 'del-seat': removeSeat(b.dataset.id); break;
@@ -1388,7 +1394,7 @@ function boot(d){
   ui.mode=pref.mode==='online'?'online':'local';
   const h=(location.hash||'').match(/^#([A-Za-z]{4})$/);
   if(h){ ui.mode='online'; ui.joinCode=h[1].toUpperCase(); try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} }
-  if(!h&&pref.online&&pref.online.code&&netReady()) enterOnline(pref.online.code);
+  if(!h&&pref.online&&pref.online.code&&netReady()&&navigator.onLine!==false) enterOnline(pref.online.code);
   else { render(); schedule(); if(ui.mode==='online') warmUp(); }
 }
 try{window.claude?.hot?.snapshot?.(()=>({S:ON?stashS:S,seats,pref}))}catch(e){}
