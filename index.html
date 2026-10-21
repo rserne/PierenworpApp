@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.ico?v=25" sizes="48x48">
-<link rel="icon" href="favicon-32.png?v=25" type="image/png" sizes="32x32">
-<link rel="icon" href="icon-192.png?v=25" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=25" sizes="180x180">
+<link rel="icon" href="favicon.ico?v=26" sizes="48x48">
+<link rel="icon" href="favicon-32.png?v=26" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png?v=26" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=26" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -159,7 +159,8 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid
 .wait .dock-msg{flex:1;color:var(--ink)}
 
 /* uitslag van een beurt */
-.result{flex:1 1 100%;display:flex;align-items:center;gap:14px;border-radius:18px;padding:12px 14px;animation:rise .4s cubic-bezier(.2,.9,.3,1.25) both}
+.result{flex:1 1 100%;display:flex;align-items:center;gap:14px;border-radius:18px;padding:12px 14px}
+.result.enter{animation:rise .4s cubic-bezier(.2,.9,.3,1.25) both}
 .result .r-text{flex:1;min-width:0}
 .result .r-title{font-family:var(--f-display);font-weight:700;font-size:19px;letter-spacing:-.02em;line-height:1.15;margin:0}
 .result .r-sub{margin:3px 0 0;font-size:14px;font-weight:500;line-height:1.35}
@@ -1305,11 +1306,15 @@ function dockHTML(scr){
     if(!me.ai&&!mine&&Date.now()-ON.changed>HUMAN_STALL) pre+=`<div class="banner"><span><b>${esc(me.name)}</b> reageert niet.</span><button class="btn soft small" data-act="takeover" data-i="${S.cur}">Laat de computer spelen</button></div>`;
   }
   if(t.phase==='done'&&t.result){
-    const r=resultHTML(t.result,me);
+    // de uitslagkaart komt één keer binnen; bij een nieuwe tekening blijft hij staan
+    if(ui.resultSeq!==S.seq){ ui.resultSeq=S.seq; ui.resultAt=Date.now(); ui.resultEnter=true; }
+    const r=resultHTML(t.result,me).replace('class="result ',`class="result${ui.resultEnter?' enter':''} `);
+    ui.resultEnter=false;
+    const autoWait=t.result.kind==='bust'?AUTO_NEXT+1200:AUTO_NEXT, elapsed=Date.now()-ui.resultAt;
     if(!mine) return `<div class="dock-in">${pre}${r}${me.ai?'':waitHTML(`Wachten tot <b>${esc(me.name)}</b> verder gaat`)}</div>`;
     const nxt=S.players[(S.cur+1)%S.players.length];
     const end=!S.center.some(c=>c.st==='open');
-    return `<div class="dock-in">${pre}${r}<button class="btn${ON?' autonext':''}" data-act="next" style="--auto:${AUTO_NEXT}ms">${end?'Bekijk de uitslag':`Verder naar ${esc(nxt.name)}`}</button></div>`;
+    return `<div class="dock-in">${pre}${r}<button class="btn${ON?' autonext':''}" data-act="next" style="--auto:${autoWait}ms;animation-delay:-${elapsed}ms">${end?'Bekijk de uitslag':`Verder naar ${esc(nxt.name)}`}</button></div>`;
   }
   if(!mine) return `<div class="dock-in">${pre}${waitHTML(statusMsg())}</div>`;
   let a=pre+`<p class="dock-msg" aria-live="polite">${statusMsg()}</p>`;
