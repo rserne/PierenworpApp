@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#110d15" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Dobbelspel: gooi acht stenen en verzamel tegels met pieren.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.ico?v=23" sizes="48x48">
-<link rel="icon" href="favicon-32.png?v=23" type="image/png" sizes="32x32">
-<link rel="icon" href="icon-192.png?v=23" type="image/png" sizes="192x192">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=23" sizes="180x180">
+<link rel="icon" href="favicon.ico?v=24" sizes="48x48">
+<link rel="icon" href="favicon-32.png?v=24" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png?v=24" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=24" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -292,6 +292,14 @@ details.rules p{margin:0 0 12px;color:var(--muted);max-width:62ch}
 .banner{flex:1 1 100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);box-shadow:var(--shadow);border-radius:14px;padding:8px 8px 8px 14px;font-size:14.5px}
 .banner span{flex:1 1 160px}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 104px);transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);font-weight:600;font-size:14.5px;padding:10px 16px;border-radius:12px;box-shadow:var(--shadow-lift);max-width:calc(100% - 32px)}
+/* mislukt: eerst laten zien wat er verloren gaat, dan bewegen */
+.mini.losing{box-shadow:0 0 0 2px var(--pink);animation:pwShake .45s ease-in-out .2s 3}
+.tile.doomed{box-shadow:0 0 0 2.5px var(--pink),var(--shadow);animation:pwPulse 1s ease-in-out infinite}
+.tile.returning{animation:pop .5s cubic-bezier(.2,.9,.3,1.5) both}
+.tile.flipping{animation:pwFlip .6s ease-in-out both}
+@keyframes pwShake{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
+@keyframes pwPulse{0%,100%{transform:none}50%{transform:scale(1.06)}}
+@keyframes pwFlip{0%{transform:perspective(300px) rotateY(0)}50%{transform:perspective(300px) rotateY(90deg)}100%{transform:perspective(300px) rotateY(0)}}
 /* uitslag: de pier kruipt uit zijn hol */
 .over-hero{display:flex;align-items:flex-end;gap:8px;min-height:150px}
 .over-hero .hero{flex:1;min-width:0;padding-bottom:22px}
@@ -575,6 +583,7 @@ function bust(reason){
   let flipped=null;
   if(hi&&hi.n!==back){ hi.st='flipped'; flipped=hi.n; }
   t.result={kind:'bust',reason,back,flipped};
+  if(S.ev) S.ev.bust={p:S.cur,back,flipped};
 }
 function advance(){
   if(T().phase!=='done') return;
@@ -584,9 +593,19 @@ function advance(){
   commit();
 }
 /* Animaties en geluid bij een nieuwe zet: van jezelf, of binnengekomen van een andere telefoon */
+const BUST_HOLD=1500, BUST_MOVE=900;
+let bustTimers=[];
 function fx(ev){
   ui.fresh=false; ui.newKept=0;
+  bustTimers.forEach(clearTimeout); bustTimers=[]; ui.bustAnim=null;
   if(!ev) return;
+  if(ev.bust&&(ev.bust.back||ev.bust.flipped)&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    // eerst de melding, dan pas de tegels laten bewegen
+    const hold=ev.k==='roll'?BUST_HOLD+400:BUST_HOLD;
+    ui.bustAnim={...ev.bust,stage:1};
+    bustTimers.push(setTimeout(()=>{ if(ui.bustAnim){ ui.bustAnim.stage=2; render(); } },hold));
+    bustTimers.push(setTimeout(()=>{ ui.bustAnim=null; render(); },hold+BUST_MOVE));
+  }
   if(ev.k==='roll'){ ui.fresh=true; playRoll(ev.n); }
   else if(ev.k==='pick'){ ui.newKept=ev.n; playSetAside(ev.n); }
 }
@@ -674,12 +693,14 @@ function schedule(){
   const t=T(), sp=pref.fast?0.45:1;
   if(P().ai){
     // pick: eerst de worp laten zien, daarna de gekozen stenen laten oplichten
-    const d=t.phase==='pick'?(t.choice==null?1500:1300):({roll:800,decide:1300,done:2800}[t.phase]||900);
+    const bustDone=t.phase==='done'&&t.result&&t.result.kind==='bust';
+    const d=t.phase==='pick'?(t.choice==null?1500:1300):bustDone?3600:({roll:800,decide:1300,done:2800}[t.phase]||900);
     if(!ON||ON.isHost) aiTimer=setTimeout(aiStep,d*sp);
     // online speelt de starter voor de computer; valt die weg, dan neemt een andere telefoon het over
     else aiTimer=setTimeout(()=>{ if(ON&&Date.now()-ON.changed>=AI_STALL) aiStep(); else schedule(); },AI_STALL);
   } else if(ON&&isMine()&&t.phase==='done'){
-    aiTimer=setTimeout(()=>{ if(isMine()&&T().phase==='done') advance(); },AUTO_NEXT);
+    const wait=t.result&&t.result.kind==='bust'?AUTO_NEXT+1200:AUTO_NEXT;
+    aiTimer=setTimeout(()=>{ if(isMine()&&T().phase==='done') advance(); },wait);
   } else if(ON&&!isMine()){
     const wait=HUMAN_STALL-(Date.now()-ON.changed);
     if(wait>0) stallTimer=setTimeout(()=>{render();schedule();},wait+200);
@@ -733,14 +754,19 @@ const ICON={
 const avatar=(name,c)=>`<span class="avatar" style="--c:var(--p${(c%6)+1})" aria-hidden="true">${esc((name||'?').trim().charAt(0).toUpperCase()||'?')}</span>`;
 
 function tileHTML(c,tg){
-  const cls=['tile',c.st];
+  const ba=ui.bustAnim;
+  let st=c.st, extra='';
+  if(ba&&c.n===ba.back){ if(ba.stage===1) st='taken'; else extra='returning'; }
+  if(ba&&c.n===ba.flipped){ if(ba.stage===1){ st='open'; extra='doomed'; } else extra='flipping'; }
+  const cls=['tile',st]; if(extra) cls.push(extra);
+  c={...c,st};
   if(c.st==='open'&&tg&&tg.type==='center'&&tg.n===c.n) cls.push('is-target');
   const label=c.st==='open'?`Tegel ${c.n}, ${wl(wormsOf(c.n))}`:c.st==='flipped'?`Tegel ${c.n}, dicht`:`Tegel ${c.n}, gepakt`;
   return `<div class="${cls.join(' ')}" role="img" aria-label="${label}"><div class="num">${c.n}</div><div class="worms">${WORM_ICON.repeat(wormsOf(c.n))}</div></div>`;
 }
-function miniHTML(n){
+function miniHTML(n,extra){
   if(n==null) return '<div class="mini empty" aria-hidden="true"></div>';
-  return `<div class="mini" aria-hidden="true"><div class="num">${n}</div><div class="worms">${WORM_ICON.repeat(wormsOf(n))}</div></div>`;
+  return `<div class="mini${extra?' '+extra:''}" aria-hidden="true"><div class="num">${n}</div><div class="worms">${WORM_ICON.repeat(wormsOf(n))}</div></div>`;
 }
 function logoHTML(){return `<h1 class="logo"><svg class="mark" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="pwLogoBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff79a5"/><stop offset="1" stop-color="#dd2c69"/></linearGradient></defs><rect width="512" height="512" rx="120" fill="url(#pwLogoBg)"/><g transform="rotate(-9 256 256)"><rect x="96" y="96" width="320" height="320" rx="80" fill="#fff"/><g transform="translate(96 96) scale(8)">${wormArt('#f2457d','#1d1626')}</g></g></svg>Pierenworp</h1>`}
 
@@ -1145,13 +1171,14 @@ function gameHTML(){
   const t=T(), me=P(), tg=(t.phase==='decide')?target():null;
 
   const players=S.players.map((p,i)=>{
-    const top=p.stack.length?p.stack[p.stack.length-1]:null;
+    const ba=ui.bustAnim, losing=ba&&ba.stage===1&&ba.p===i&&ba.back;
+    const top=losing?ba.back:(p.stack.length?p.stack[p.stack.length-1]:null);
     const cls=['pcard'];
     if(i===S.cur) cls.push('is-cur');
     if(tg&&tg.type==='steal'&&tg.from===i) cls.push('is-victim');
     if(i===S.cur&&t.phase==='done'&&t.result&&t.result.kind!=='bust') cls.push('got');
-    const k=p.stack.length, you=ON&&p.uid===ON.uid;
-    return `<div class="${cls.join(' ')}">${avatar(p.name,p.c??i)}<div class="who"><div class="name">${esc(p.name)}${you?'<span class="you">jij</span>':''}</div><div class="meta"><span class="stat">${TILE_ICON}<b>${k}</b> ${k===1?'tegel':'tegels'}</span></div></div>${miniHTML(top)}</div>`;
+    const k=p.stack.length+(losing?1:0), you=ON&&p.uid===ON.uid;
+    return `<div class="${cls.join(' ')}">${avatar(p.name,p.c??i)}<div class="who"><div class="name">${esc(p.name)}${you?'<span class="you">jij</span>':''}</div><div class="meta"><span class="stat">${TILE_ICON}<b>${k}</b> ${k===1?'tegel':'tegels'}</span></div></div>${miniHTML(top,losing?'losing':'')}</div>`;
   }).join('');
 
   const kf=new Set(t.kept), s=total(t), ready=hasWorm(t)&&s>=21;
